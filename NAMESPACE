@@ -1,0 +1,38 @@
+## imports
+
+## exports
+export(gsb, gsbDesign, gsbSimulation, tab, gsbBayesUpdate, gsbCriteria)
+
+## not exported functions (access with ::: operator)
+
+## integer2numeric
+## rmvnorm
+## gsbCgrid
+
+## plot.gsbSimDif.result
+## plot.gsbCalcDif.result
+## plot.gsbSimCalcDif.result
+## plot.gsbSimArm.result
+
+## gsbCumulativeProbability
+## gsbSum.numeric
+## gsbSampleSize
+## gsbCalcDif
+## gsbSimDif
+## gsbSimArm
+
+
+## S3methods
+S3method(summary,gsbMainOut)
+
+S3method(as.data.frame,gsbCriteria)
+
+S3method(print,gsbDesign)
+S3method(print,gsbSimulation)
+S3method(print,gsbMainOut)
+
+S3method(plot,gsbSimulation)
+S3method(plot,gsbMainOut)
+S3method(plot,gsbDesign)
+
+

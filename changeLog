@@ -1,0 +1,129 @@
+---------------------------
+-- ChangeLog - gsbDesign --
+---------------------------
+
+2012-05-07 Florian Gerber (version 0.95)
+	* first submit to CRAN
+
+2012-04-29 Florian Gerber (version 0.94-4)
+	* tab():
+	  - dimnames of the output matrix are now rounded to the amount of digits specified
+	    in argument digits.
+	  - additional note in argument 'OC' of tab.Rd stating that the grid.type should be
+	    'table' if type.updated = 'per arm'.
+	* additional example (2b) added to 'gsb.Rd'. This example
+	  has 3 success criteria (comment David)
+	* note on prior specification added to description part
+	  of 'gsb-package.Rd' and 'gsb.Rd'. (comment David)
+
+2012-04-09 Florian Gerber (version 0.94-3)
+	* plot.gsbMainOut():
+	  - ylab="Probability" for what = "all" and "cumulative all" (comment björn)
+	  - frame around legend removed (comment björn)
+	  - more space between curve and plot bound if what = "sample size" (comment björn)
+	  - scales not alternating
+	  - for grid.type="plot" there is now an additional point in each corner of the picture.
+	    This should help to avoid blank areas in the corners (caused by the interpolation).
+	  - color of curve now black iff only 1 stage is plotted and what = "sample size" (comment thomas)
+	* print.gsbSimulation():
+	  - typo (comment björn)
+	  - correction in grid display for grid.type = "table" and "manually"
+
+2012-03-30 Florian Gerber (version 0.94-2)
+	* names of title and axis of boundary plots changed (comments heinz)
+	* typos in help corrected (comments heinz)
+	* "not run example" in plot.gsbMainOut() works now
+	  ("%" is a special character even in the example section of a .rd file)
+
+2012-03-19 Florian Gerber (version 0.94)
+	* help changed according to comments of Heinz
+	* dontrun example in plot.gsbMainOut added
+	* tests file adapted and extended
+	* print.gsbMainOut() and summary.gsbMainOut() now almost equal.
+	* print methods only for objects gsbDesign, gsbSimulation and gsbMainOut
+	* checks for valid input in all funktion which should be use by user.
+	  - new function: integer2numeric() to simplify checks
+	* input and defaults in gsb(), gsbDesign(), gsbSimulation changed
+	  according to comments of Heinz and Björn:
+	  - changes in almost  every function...
+	* gsbPriorPrecision() is no longer in package
+	* bounds on standardized scale added.
+	  and corresponding plot what="std.boundary"
+	* package depends also on 'package:grid' since ever. now added as dependency
+	* plot.gsbMainOut():
+	  - new argument: path=getwd()
+	  - plot changes plots
+	* tab(): new arguments: sep="," and path=getwd()
+	* "delta0" replaced by "delta"
+	* "placebo" replaced by "control"
+
+2012-02-23 Florian Gerber (version 0.93-3)
+	* bug in fkt gsbSimDif() reported by Björn.
+	  the covariance matrix "covmat" is now build correctly (attempt 2)
+	* bug in fkt gsbCriteria() reported by Björn.
+	  problems with coding. fkt partially rewritten.
+	* title and labels of plot.boundary() changed according to comment Heinz.
+	* names of elements of the prior vector are now similar in "treatment effect"
+	  and "per arm" scenario. comment Heinz.
+	* bug in fkt print.gsbTrial(). labeling (and organization) changed. (comment Heinz)
+	* summary.gsbMainOut(): only summary for suitable "atDelta". (no NA's in summary). comment Heinz
+	  and fkt tab() gives now an error message if "atDelta" not suitable (no NA's).
+
+2012-02-20 Florian Gerber (version 0.93-2)
+	* bug in fkt gsbSimDif() reported by björn.
+	  the covariance matrix "covmat" is now build correctly
+
+2012-02-11 Florian Gerber (version 0.93)
+	* test script --> bugs found and repaired:
+		- tab() default of arg "what" changed to "success"
+		  (because "cumulative success" not available in 1 stage scenario.)
+		- gsbCriteria(): problems if only one criteria per stage
+		- gsb(): non-informative prior per arm
+	* bugs in functions gsbSimDif() and gsbCalcDif() corrected (comment Thomas)
+		- new function rmvnorm() added. used for function gsbCalcDif(),
+		  copied from package:mvtnorm.
+	          this fkt is not exported and not have a own help page
+	* ChangeLog file added
+	* namespace added
+	* help file of all functions in namespace
+		- Description and references of Heinz
+		- (comments of Björn)
+		- (comment Thomas)
+		- spelling mistakes corrected
+ 	* export .csv for tables, .png for plots (comment Thomas)
+	* shorter summary (as summary of class 'gsDesign'). (comment Thomas)
+	* changed the names of values of following argumens of 'gsbSimulation()'. (comment Thomas)
+		- 'on difference' --> 'treatment effect'
+		- 'exact' --> 'numerical integration'
+	* 'what' argument of 'plot()' is now similar to 'what' argument of 'tab()'. (comment Thomas)
+	* names of prior-vector changed. (now similar to 'trial'). (comment Thomas)
+	* header/disclaimer for GNU-license added.
+
+2011-12-12 Florian Gerber (version 0.92)
+	* new function 'tab()' to convert the output to "nice" tables
+	* summary-method for class 'gsbMainOut'
+
+2011-11-28 Florian Gerber (version 0.91)
+	* simplify input
+		- set criteria once for all stages
+		- set default values
+	* Boundaries in output
+		- only available if type.update=”on difference” and method=”exact” or “both”
+		- corresponding plot
+	* labels of plots
+	* roughly update of help file to current state
+	* examples to explain input
+
+2011-11-12 Florian Gerber (version 0.90)
+	* Grid: 3 grid types (use “example(gsb)” to see plots with the different grids)
+		- grid.type = “table”
+		- grid.type = “manually”
+		- grid.type= “plot” (without dependence on “lhs” package)
+	* “lattice” dependence (no dependence on latest version)
+	* default plot limes (problem of test6 from heinz)
+	* typos
+	* name of the package changed to “gsbDesign”
+	* input “type” separated in
+		- type.update = c(“on difference”, “per arm”)
+		- method=c(“exact”, “simulation”, “both”)
+	* roughly update of help file to current state.

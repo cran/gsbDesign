@@ -1,0 +1,11 @@
+f9c64a52aa37ed0ba5397d2ec2c638f0 *DESCRIPTION
+e020eb7a5e24a2ea69d651f93c27f87a *NAMESPACE
+86e14f5be775036dc663676be9bfa0d4 *R/package.r
+2e6a18cc1a421a227d1496591c24738c *changeLog
+b912c3220abb02462af4d0f01df3bada *man/gsb-internal.Rd
+fbdf6cfee8005567782150deb5224f65 *man/gsb-package.Rd
+ac1588b3f958b2c1d384d8c021db93fa *man/gsb.Rd
+bd086cbe6586d32ee06d45a4baec457c *man/gsbBayesUpdate.Rd
+6c96bf5f53cb8cb28cf91e7b4bbdd2cd *man/gsbCriteria.Rd
+9390fe8ffb99f863ede4eec8942a8f48 *man/plot.gsbMainOut.Rd
+775c1d057f247c090d35e033c1bfcd00 *man/tab.Rd
