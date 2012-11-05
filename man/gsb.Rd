@@ -35,7 +35,7 @@ gsbDesign(nr.stages = NULL,
 gsbSimulation(truth = NULL,
               type.update = c("treatment effect","per arm"),
               method = c("numerical integration", "simulation", "both"),
-              grid.type = c("table","plot","manually"),
+              grid.type = c("table","plot","sliced","manually"),
               nr.sim = 50000,
               warnings.sensitivity = 100,
               seed = NULL)
@@ -107,8 +107,7 @@ gsbSimulation(truth = NULL,
     in the examples below. If this prior is specified the argument \code{type.update} has to be "per arm".
   }
   \item{truth}{
-    a \code{numeric} or \code{matrix} containing the
-    specification of the true treatment effects.\cr
+    specifies the truth to evaluate.\cr
     
     If \code{type.update = "treatment effect"} this argument specifies
     the true treatment effect delta (= treatment - placebo). It has the form
@@ -119,8 +118,12 @@ gsbSimulation(truth = NULL,
     use this set \code{grid.type = "manually"}. (example 2).
     
     If \code{type.update = "per arm"} and \code{grid.type = "table"} the
-    argument has to be specified as a \code{list} containing a vector of true
+    argument has to be specified as \code{list} containing a vector of true
     control values and true treatment values.\cr
+
+    If \code{type.update = "per arm"} and \code{grid.type = "sliced"} the
+    argument has to be specified as \code{list} containing a vector of true
+    control values and a vector of true deltas (= treatment - control).\cr    
     
     If \code{type.update = "per arm"} and \code{grid.type = "plot"} the
     argument has to be specified as follows:\cr \code{truth = c(min.placebo, max.placebo,min.treatment, max.treatment, n)},
@@ -132,7 +135,7 @@ gsbSimulation(truth = NULL,
     the second column.
   }
   \item{type.update}{
-    If \code{type.update = "treatment effect"}, the bayesian update from prior to
+    If \code{type.update = "treatment effect"}, the Bayesian update from prior to
     posterior is calculated on treatment effect delta. If
     \code{type.update = "per arm"}, the update is calculated separately
     in the placebo and the treatment arm. In this case it is possible to
@@ -148,11 +151,14 @@ gsbSimulation(truth = NULL,
     If \code{type.update = "per arm"} only a simulation method is implemented.
   }
   \item{grid.type}{
-    If \code{type.update = "per arm"}, there are 3 possibilities to
-    specify the truth:\cr 
+    If \code{type.update = "per arm"}, there are 4 possibilities to
+    specify the truth: \cr 
     1. \code{grid.type = "table"} for presenting the results in a table.\cr
-    2. \code{grid.type = "plot"} optimized grid for plotting the results.\cr
-    3. \code{grid.type = "manually"} for specifying a grid in a matrix.\cr
+    2. \code{grid.type = "sliced"} for presenting the results in a table.\cr
+    3. \code{grid.type = "plot"} optimized grid for plotting the results.\cr
+    4. \code{grid.type = "manually"} for specifying a grid in a matrix.\cr
+    If \code{type.update = "treatment effect"} only \code{grid.type =
+    "table"} and \code{grid.type = "manually"} are valid inputs. 
     The argument \code{truth} should be specified according to the argument
     \code{grid.type}.
   }
@@ -228,7 +234,6 @@ Florian Gerber, Thomas Gsponer
 \code{\link{plot.gsbMainOut}}, \code{\link{tab}}, \code{\link{gsbBayesUpdate}}, \code{\link{gsbCriteria}}, \code{\link{gsb-package}}
 }
 \examples{
-
 ## E X A M P L E 1: Update on treatment effect, flat prior
 ##
 ## A. Trial Design:
@@ -297,7 +302,6 @@ plot(x1, what="sample size")
 x1$boundary
 plot(x1, what="boundary")
 plot(x1, what="std.boundary")
-
 
 
 ## E X A M P L E 2: Update on treatment effect, informative prior
@@ -395,6 +399,8 @@ plot(x2b, what="std.boundary")
 
 
 
+
+\dontrun{
 ## E X A M P L E 3: Update on treatment effect, informative prior
 ##
 ## A. Trial Design
@@ -406,7 +412,7 @@ plot(x2b, what="std.boundary")
 ##         Stage 2: 20 patients in control arm; 30 patients in treatment arm
 ##         Stage 3: 30 patients in control arm; 45 patients in treatment arm
 ##     --> patients = rbind(c(10,15),c(20,30),c(30,45))
-## A.3 Sigma in control arm = 9 ; in treamtnet arm = 12
+## A.3 Sigma in control arm = 9 ; in treatment arm = 12
 ##     --> sigma = c(9,12)
 ## A.4 Success criteria for all stages:
 ##     stop for success, if P( delta > 0 | data ) >= 0.8
@@ -438,7 +444,7 @@ design3
 ## B.2 Bayesian update on treatment effect delta (= treatment - control)
 ##     --> type.update = "treatment effect"
 ## B.3 Operating characteristics are evaluated by simulation and
-##     numerical integration to doublecheck the results
+##     numerical integration to double check the results
 ##     --> method = "both"
 ## B.4 Number of simulations = 5000
 ##     --> nr.sim = 5000
@@ -560,22 +566,22 @@ design5 <- gsbDesign(nr.stages=3,
                      prior.treatment=c(7,1)) 
 design5
 
-## B.T.  Simulation Settings: - with table grid
+## B.  Simulation Settings: - with table grid
 ## --------------------------------------------
-## B.T.1 True control/treatment values:
+## B.1 True control/treatment values:
 ##       control = seq(1,5,0.5)
 ##       treatment = seq(1,7,1)
 ##       --> truth = list(seq(1,5,0.5),seq(1,7,1))
-## B.T.2 Output optimized to create table
+## B.2 Output optimized to create table
 ##       --> grid.type = "table"
-## B.T.3 Bayesian update per arm
+## B.3 Bayesian update per arm
 ##       --> type.update = "per arm"
-## B.T.4 Number of simulations = 5000 (which is low)
+## B.4 Number of simulations = 5000 (which is low)
 ##       --> nr.sim = 5000
-## B.T.5 If the number of simulations is smaller than 2000
+## B.5 If the number of simulations is smaller than 2000
 ##       print a warning.
 ##       --> warnings.sensitivity = 2000
-## B.T.6 A seed value is set to 13
+## B.6 A seed value is set to 13
 ##       --> seed = 13
 
 simulation5.table <- gsbSimulation(truth = list(seq(1,5,0.5), seq(1,7,1)),
@@ -586,8 +592,7 @@ simulation5.table <- gsbSimulation(truth = list(seq(1,5,0.5), seq(1,7,1)),
                                    seed = 13)
 simulation5.table
 
-## The same grid can be specifiedy manaully by
-
+## The same grid can be specified manually by
 simulation5.manually <- gsbSimulation(truth = as.matrix(expand.grid(seq(1,5,0.5),seq(1,7,1))),
                                      grid.type = "manually",
                                      type.update = "per arm",
@@ -596,10 +601,20 @@ simulation5.manually <- gsbSimulation(truth = as.matrix(expand.grid(seq(1,5,0.5)
                                      seed = 13)
 simulation5.manually
 
+## To specify a grid optimized for sliced plotting with
+## control values from -10 to 0 and treatment values from -10 to 25
+
+simulation5.sliced <- gsbSimulation(truth = list(control=seq(-10,0,2), delta=seq(-10,25,4)),
+                                    grid.type = "sliced",
+                                    type.update = "per arm",
+                                    nr.sim = 5000,
+                                    warnings.sensitivity = 2000,
+                                    seed = 13)
+simulation5.sliced
+
 ## To specify a grid optimized for plotting with
 ## control values from 1 to 5 and treatment values from 1 to 7
 ## with approximately 20 values enter: 
-
 simulation5.plot <- gsbSimulation(truth = c(1,5,1,7,20),
                                   grid.type = "plot",
                                   type.update = "per arm",
@@ -610,30 +625,41 @@ simulation5.plot
 
 ## C. Use function gsb
 x5.table <- gsb(design5,simulation5.table)
+x5.sliced <- gsb(design5,simulation5.sliced)
 x5.plot <- gsb(design5,simulation5.plot)
 x5.table
 
-## D.  Tables
-## D.1 Get array containing "cumulative futility"
-##     with dimensions (delta.control, delta.treatment, stage)  
+## D. Tables
+## D.1 For any grid a table in long format can be obtained  
 t5.1 <- tab(x5.table,"cumulative futility")
-t5.1
+head(t5.1)
 
-## D.2 Fix a stage, e.g. stage 2, to get a matrix
-t5.1[,,2]
+t5.2 <- tab(x5.sliced,"all")
+head(t5.2)
+
+## D.2 For the "table" grid there are additionally tables in wide format available.
+t5.3 <- tab(x5.table,"success", wide=TRUE)
+t5.3
+
+## Fix a stage, e.g. stage 2, to get a matrix
+t5.3[,,2]
 
 ## D.2 Set delta.control to '3' to get a matrix
-t5.1["contr 3",,]
+t5.3["contr 3",,]
 
 # D.3 Plot results
 plot(x5.table)
 plot(x5.plot)
+plot(x5.sliced)
+plot(x5.sliced, sliced=TRUE)
+plot(x5.sliced, sliced=TRUE, range.control=c(-4,0))
+plot(x5.sliced, what="success", sliced=TRUE, range.control=c(-4,0))
+
 ## the plot can differ because the number of simulations "nr.sim"
 ## is low and because the grids are different
-
 plot(x5.plot,"sample size", color=FALSE)
-tab(x5.table,"sample size")[,,3]
-
+head(tab(x5.table,"sample size"))
+}
 }
 
 \keyword{main function}

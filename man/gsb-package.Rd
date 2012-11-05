@@ -23,8 +23,8 @@ The main function of the package is \code{gsb()}. More detailed information can 
   \tabular{ll}{
     Package: \tab gsbDesign\cr
     Type: \tab Package\cr
-    Version: \tab 0.95\cr
-    Date: \tab 2012-05-07\cr
+    Version: \tab 0.96-1\cr
+    Date: \tab 2012-11-05\cr
     License: \tab GNU General Public License >=3\cr
     LazyLoad: \tab yes\cr
   }
@@ -32,7 +32,7 @@ The main function of the package is \code{gsb()}. More detailed information can 
 \author{
 Florian Gerber, Thomas Gsponer
 
-Maintainer: <flora.fauna.gerber@gmail.com>
+Maintainer: <flora.fauna.gerber at gmail.com>
 }
 \references{
   \itemize{

@@ -2,6 +2,44 @@
 -- ChangeLog - gsbDesign --
 ---------------------------
 
+
+2012-11-05 Florian Gerber (version 0.96-1)
+	* run-time of examples is too long for CRAN.
+	  time consuming examples are now 'not run'.
+
+2012-10-12 Florian Gerber (version 0.96)
+	* no further bugs found. submit to CRAN as version 0.96.
+
+2012-10-12 Florian Gerber (version 0.95-3-2)
+	* add GUI examples to test scrip.
+	* correct bugs in plot() and tab().
+
+2012-09-25 Florian Gerber (version 0.95-3)
+	* for type.update = "per arm" there are 4 grid types available:
+	  1. "table" to get tables also in "wide format".
+	  2. "sliced" to get also "sliced plots".
+	     argument "truth" in gsbDesign() is a list(control=, delta=).
+	  3. "plot" optimized for contour plots.
+	  4. "manually".
+	* tab()
+	  - 2 types of table available:
+	       1. table in long format, available for all grid types
+	       2. table in wide format, available for grid.type = "table",
+	          get this table with argument: wide = TRUE.
+	  - takes only class 'gsbMainOut' as argument
+	  - summary() and print() adapted.
+	* plot
+	  - sliced sample size plot available
+	  - more compact display e.g. for what = "success"
+	    (all lines in one panel with different lty and legend.)
+	* updated example in help of gsb().
+	* typos in help file
+
+2012-07-05 Florian Gerber (version 0.95-1)
+	* Also 2d plot for type.update = "per arm"
+	* additional / exchange table for type.update = "treatment effect"
+	* additional table for type.update = "treatment effect"
+
 2012-05-07 Florian Gerber (version 0.95)
 	* first submit to CRAN
 
@@ -93,7 +131,7 @@
  	* export .csv for tables, .png for plots (comment Thomas)
 	* shorter summary (as summary of class 'gsDesign'). (comment Thomas)
 	* changed the names of values of following argumens of 'gsbSimulation()'. (comment Thomas)
-		- 'on difference' --> 'treatment effect'
+1		- 'on difference' --> 'treatment effect'
 		- 'exact' --> 'numerical integration'
 	* 'what' argument of 'plot()' is now similar to 'what' argument of 'tab()'. (comment Thomas)
 	* names of prior-vector changed. (now similar to 'trial'). (comment Thomas)
