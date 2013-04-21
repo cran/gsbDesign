@@ -1,9 +1,9 @@
-4ab1d0fc745ec937f0290e2d9384a405 *DESCRIPTION
+0dd924a895740842fe7fc8b4f12b28f1 *DESCRIPTION
 e020eb7a5e24a2ea69d651f93c27f87a *NAMESPACE
-db0e46c19873a31985ee1335023be658 *R/package.r
-162f324d871b58ba4b6dd9e6f9e58e62 *changeLog
+67cfe2da8ac40477549eff3afd80d5fd *R/package.r
+e7dea97a21431d703e7ba94be0548e95 *changeLog
 b912c3220abb02462af4d0f01df3bada *man/gsb-internal.Rd
-936bfc1e2b24e64df7f6a1a18dcac924 *man/gsb-package.Rd
+294ad25fa46b25e41a36e06fd505166c *man/gsb-package.Rd
 60567b16c57399ee4a64154dbd8039d0 *man/gsb.Rd
 bd086cbe6586d32ee06d45a4baec457c *man/gsbBayesUpdate.Rd
 6c96bf5f53cb8cb28cf91e7b4bbdd2cd *man/gsbCriteria.Rd

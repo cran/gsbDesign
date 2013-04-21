@@ -23,8 +23,8 @@ The main function of the package is \code{gsb()}. More detailed information can 
   \tabular{ll}{
     Package: \tab gsbDesign\cr
     Type: \tab Package\cr
-    Version: \tab 0.96-1\cr
-    Date: \tab 2012-11-05\cr
+    Version: \tab 0.96-2\cr
+    Date: \tab 2013-04-21\cr
     License: \tab GNU General Public License >=3\cr
     LazyLoad: \tab yes\cr
   }

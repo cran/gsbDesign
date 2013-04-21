@@ -567,6 +567,8 @@ gsbCriteria <- function(criteria,
   return(list(CS=CS,CF=CF))
 }
 
+
+
 gsbCalcDif <- function(design,
                        simulation){
   
@@ -608,6 +610,7 @@ gsbCalcDif <- function(design,
     delta <- rep(DELTA,times=i*5)
     type <- c(rep("success",times=length(DELTA)*i),rep("futility",times=length(DELTA)*i),rep("success or futility",times=length(DELTA)*i),rep("indeterminate",times=length(DELTA)*i),rep("sample size",times=length(DELTA)*i))
     stage <- rep(paste("stage",t(array(dim=c(i,length(DELTA)),data=1:i))),times=5)
+    stage <- factor(stage, levels=paste("stage",1:i))
     method <- rep("numerical integration",times=length(DELTA)*i*5)
   }else{
     li <- list(success=test$upper$prob,futility=test$lower$prob,success_and_futility=test$upper$prob+test$lower$prob)
@@ -620,6 +623,7 @@ gsbCalcDif <- function(design,
     delta <- rep(DELTA,times=i*9)
     type <- c(rep("success",times=length(DELTA)*i),rep("futility",times=length(DELTA)*i),rep("success or futility",times=length(DELTA)*i),rep("indeterminate",times=length(DELTA)*i),rep("cumulative success",times=length(DELTA)*i),rep("cumulative futility",times=length(DELTA)*i),rep("cumulative success or futility",times=length(DELTA)*i),rep("cumulative indeterminate",times=length(DELTA)*i),rep("sample size",times=length(DELTA)*i))
     stage <- rep(paste("stage",t(array(dim=c(i,length(DELTA)),data=1:i))),times=9)
+    stage <- factor(stage, levels=paste("stage",1:i))
     method <- rep("numerical integration",times=length(DELTA)*i*9)
   }
   r <- data.frame(value,type,delta,stage,method)
@@ -648,11 +652,9 @@ gsbCalcDif <- function(design,
 }
 
 
+
 gsbSimDif <- function(design,
                       simulation){
-
-    ## design <- design2
-    ## simulation <- simulation2
 
     nr.of.sim <- simulation$nr.sim
     delta3 <- simulation$truth
@@ -677,7 +679,6 @@ gsbSimDif <- function(design,
       prior[2] <- (prior[4]^2/prior[3]+prior[6]^2/prior[5])^(-1)
     }
     
-
 
     warning.index <- rep(0,times=length(delta3))
 
@@ -850,7 +851,8 @@ gsbSimDif <- function(design,
         type <- factor(c(rep("success",times=(i*length(delta3)) ),rep("futility",times=(i*length(delta3)) ),rep("success or futility",times=(i*length(delta3)) ),rep("nr of success",times=(i*length(delta3)) ),rep("nr of futility",times=(i*length(delta3)) ),rep("nr of success or futility",times=(i*length(delta3))),rep("success",times=(i*length(delta3))),rep("futility",times=(i*length(delta3))),rep("success or futility",times=(i*length(delta3))),rep("indeterminate",times=(i*length(delta3))),rep("sample size",times=length(delta3)) ))
 
         stage <- c(rep(paste("stage",1:i),times=length(delta3)*11 ))
-
+        stage <- factor(stage, levels=paste("stage",1:i))
+        
         delta <- c(as.vector( t(array(dim=c(length(delta3)*11,i),data=delta3))))
 
         r <- data.frame(value,type,delta,stage,method)
@@ -872,7 +874,8 @@ gsbSimDif <- function(design,
                          rep("cumulative success",times=(i*length(delta3))),rep("cumulative futility",times=(i*length(delta3))),rep("cumulative success or futility",times=(i*length(delta3))),rep("cumulative indeterminate",times=(i*length(delta3))),
                          rep("sample size",times=(i*length(delta3)))))
         stage <- c(rep(paste("stage",1:i),times=length(delta3)*12 ) )
-
+        stage <- factor(stage, levels=paste("stage",1:i))
+        
         delta <- c(as.vector( t(array(dim=c(length(delta3)*12,i),data=delta3))))
 
         r <- data.frame(value,type,delta,stage,method)
@@ -890,6 +893,289 @@ gsbSimDif <- function(design,
     }
 
     return(list(OC=r,warnings=war))
+}
+
+
+gsbSimArm <- function(design,
+                      simulation){
+
+    ## design <- design4
+    ## simulation <- simulation4
+
+    EX <- design$trial
+    CR <- design$criteria
+   
+    i <- design$nr.stages
+
+    nr.of.sim  <- simulation$nr.sim
+    delta.grid <- simulation$truth
+    delta.p <- delta.grid[,1]
+    delta.t <- delta.grid[,2]
+
+    ld.p <- length(delta.p)
+    ld.t <- length(delta.t)
+
+    ##precision dicributions prior and trial
+    if(design$prior.control[1]=="non-informative")
+      design$prior.control <- c(0,0)
+    if(design$prior.treatment[1]=="non-informative")
+      design$prior.treatment <- c(0,0)
+
+    prior <- c(design$prior.control[1],design$prior.treatment[1],design$prior.control[2], design$sigma[1],design$prior.treatment[2], design$sigma[2])
+    sigmaDp <- prior[4]^2/prior[3]      #sigma^2 / n
+    sigmaDt <- prior[6]^2/prior[5]
+    names(sigmaDp) <- "sigma^2 control distr"
+    names(sigmaDt) <- c("sigma^2 treatment distr")
+    prior <- c(prior,sigmaDp,sigmaDt)
+
+    tri <- array(dim=c(i,8),data=c(EX,rep(NA,times=4*i)))#
+    tri[,5] <- EX[,2]^2/EX[,1]
+    tri[,6] <- EX[,4]^2/EX[,3]
+    tri[,7] <- 1/tri[,5]
+    tri[,8] <- 1/tri[,6]
+
+    dimnames(tri) <- list(paste("stage",1:i),c("nr.control","sigma control","nr treatment","sigma treatment","sigma^2 distr. plasebo","sigma^2 distr. treatment","precision distr. control","precision distr. treatment"))
+
+
+ #test if patients =0 in stages
+    test.p <- (tri[,1]&tri[,2])!=0
+    test.t <- (tri[,3]&tri[,4])!=0
+
+    Psucfut <- array(data=NA,dim=c(i,length(delta.p)))
+    Psuc <- array(data=NA,dim=c(i,length(delta.p)))
+    Pfut <- array(data=NA,dim=c(i,length(delta.p)))
+
+
+    # index für warnings
+    warning.index <- rep(0,times=ld.p)
+
+
+    for (dd.t in 1:length(delta.t)){
+     #   dd.t <- 1
+
+                                        #nr of simulations
+        nd <- rep(0,times=i+1)
+        nd[1] <- nr.of.sim
+
+                                        #simulate control
+        dt.p <- matrix(nrow=i,ncol=nd)
+        dt.t <- matrix(nrow=i,ncol=nd)
+
+
+        if (i>1){
+            for (k in (1:i)[test.p]){
+                dt.p[k,] <- rnorm(n=nd[1],mean=delta.p[dd.t],sd=sqrt(tri[k,5]))#simulate !
+            }
+                d.p <- dt.p[,1:nd[1]]
+            }
+
+        if ((i==1)&test.p[1]){
+            dt.p <-  rnorm(n=nd[1],mean=delta.p[dd.t],sd=sqrt(tri[1,5]))
+            d.p <- t(as.matrix(dt.p))
+        }
+
+
+        if (i>1){
+            for (k in (1:i)[test.t]){
+                dt.t[k,] <- rnorm(n=nd[1],mean=delta.t[dd.t],sd=sqrt(tri[k,6]))#simulate !
+            }
+            d.t <- dt.t[,1:nd[1]]
+        }
+
+        if ((i==1)&test.t[1]){
+            dt.t <-  rnorm(n=nd[1],mean=delta.t[dd.t],sd=sqrt(tri[1,6]))
+            d.t <- t(as.matrix(dt.t))
+        }
+
+                                        #test if there are patients in stage, update if there are
+        if (test.p[1]){
+            post.p <- gsbBayesUpdate(alpha=rep(prior[1],times=nd[1]),beta=rep(1/prior[7],nd[1]),precisionData=tri[1,7],meanData=d.p[1,],with.alpha=TRUE)##
+        }else{
+            post.p <- list(alpha=rep(prior[1],times=nd[1]),beta=rep(1/prior[7],times=nd[1]))
+        }
+
+        if (test.t[1]){
+            post.t <- gsbBayesUpdate(alpha=rep(prior[2],times=nd[1]),beta=rep(1/prior[8],nd[1]),precisionData=tri[1,8],meanData=d.t[1,],with.alpha=TRUE)##
+        }else{
+            post.t <- list(alpha=rep(prior[2],times=nd[1]),beta=rep(1/prior[8],times=nd[1]))
+        }
+        tt <- list(alpha=post.t$alpha-post.p$alpha,beta=(post.p$beta*post.t$beta)/(post.p$beta+post.t$beta))
+
+        NS <- length(CR[1,1,,1][!is.na(CR[1,1,,1])])
+        if(NS==0){
+            index.SS  <- array(dim=c(1,nr.of.sim),data=FALSE)
+            index.S  <- array(dim=c(1,nr.of.sim),data=FALSE)
+        }
+        if(!(NS==0)){
+
+            qnorm.S <- array(dim=c(NS,nr.of.sim),data=NA)
+            index.S  <- array(dim=c(NS,nr.of.sim),data=NA)
+
+            for (jk in 1:NS){
+                qnorm.S[jk,] <- qnorm(1-CR[2,1,jk,1],tt$alpha,1/sqrt(tt$beta))
+                index.S[jk,] <- qnorm.S[jk,]>CR[1,1,jk,1]
+            }
+
+            index.SS <- Reduce('&',as.data.frame(t(index.S)))
+        }
+
+
+        NF <- length(CR[1,2,,1][!is.na(CR[1,2,,1])])
+        if(NF==0){
+            index.FF  <- array(dim=c(1,nr.of.sim),data=FALSE)
+            index.F  <- array(dim=c(1,nr.of.sim),data=FALSE)
+        }
+        if(!(NF==0)){
+            qnorm.F <- array(dim=c(NF,nr.of.sim),data=NA)
+            index.F  <- array(dim=c(NF,nr.of.sim),data=NA)
+
+            for (jk in 1:NF){
+                qnorm.F[jk,] <- qnorm(CR[2,2,jk,1],tt$alpha,1/sqrt(tt$beta))
+                index.F[jk,] <- qnorm.F[jk,]<CR[1,2,jk,1]
+            }
+            index.FF <- Reduce('&',as.data.frame(t(index.F)))
+        }
+
+        indeX <- index.SS | index.FF
+
+
+        Psucfut[1,][dd.t] <- sum(indeX)/nd[1]
+        Psuc[1,][dd.t] <- sum(index.SS)/nd[1]
+        Pfut[1,][dd.t] <- sum(index.FF)/nd[1]
+
+        nd[2] <- sum(!indeX)
+
+        if (i >1){
+            for (jn in 2:i){
+               #  jn <- 2
+
+                #for warning message....
+                if (nd[jn]<simulation$warnings.sensitivity){
+                    if(warning.index[dd.t]==0){
+                        warning.index[dd.t] <- jn
+                    }
+                }
+
+                                        #prevent d[jn,] incorrect dimension error
+                if(nd[jn]<2){
+                    Psucfut[jn,][dd.t] <- 0
+                    Psuc[jn,][dd.t] <- 0
+                    Pfut[jn,][dd.t] <- 0
+                    nd[jn+1] <- 0
+                }else{
+
+                    d.p <- d.p[,!indeX]
+                    d.t <- d.t[,!indeX]
+                    if (test.p[jn]){
+                        post.p <- gsbBayesUpdate(alpha=post.p$alpha[!indeX],beta=post.p$beta[!indeX],precisionData=tri[jn,7],meanData=d.p[jn,],with.alpha=TRUE)
+                    }else{
+                        post.p <- list(alpha=post.p$alpha[!indeX],beta=post.p$beta[!indeX])
+                    }
+                    if (test.t[jn]){
+                        post.t <- gsbBayesUpdate(alpha=post.t$alpha[!indeX],beta=post.t$beta[!indeX],precisionData=tri[jn,8],meanData=d.t[jn,],with.alpha=TRUE)
+                    }else{
+                        post.t <- list(alpha=post.t$alpha[!indeX],beta=post.t$beta[!indeX])
+                    }
+
+                    tt <- list(alpha=post.t$alpha-post.p$alpha,beta=(post.p$beta*post.t$beta)/(post.p$beta+post.t$beta))
+
+                    NS <- length(CR[1,1,,jn][!is.na(CR[1,1,,jn])])
+                    if(NS==0){
+                        index.SS  <- array(dim=c(1,nd[jn]),data=FALSE)
+                    }
+                    if(!(NS==0)){
+                        qnorm.S <- array(dim=c(NS,nd[jn]),data=NA)
+                        index.S  <- array(dim=c(NS,nd[jn]),data=NA)
+
+                        for (jk in 1:NS){
+                            qnorm.S[jk,] <- qnorm(1-CR[2,1,jk,jn],tt$alpha,1/sqrt(tt$beta))
+                            index.S[jk,] <- qnorm.S[jk,]>CR[1,1,jk,jn]
+                        }
+
+                        index.SS <- Reduce('&',as.data.frame(t(index.S)))
+                    }
+
+
+                    NF <- length(CR[1,2,,jn][!is.na(CR[1,2,,jn])])
+                    if(NF==0){
+                        index.FF  <- array(dim=c(1,nd[jn]),data=FALSE)
+                    }
+                    if(!(NF==0)){
+                        qnorm.F <- array(dim=c(NF,nd[jn]),data=NA)
+                        index.F  <- array(dim=c(NF,nd[jn]),data=NA)
+
+                        for (jk in 1:NF){
+                            qnorm.F[jk,] <- qnorm(CR[2,2,jk,jn],tt$alpha,1/sqrt(tt$beta))
+                            index.F[jk,] <- qnorm.F[jk,]<CR[1,2,jk,jn]
+                        }
+                        index.FF <- Reduce('&',as.data.frame(t(index.F)))
+                    }
+
+                    indeX <- index.SS | index.FF
+
+                    nd[jn+1] <- sum(!indeX)
+
+                    Psucfut[jn,][dd.t] <- sum(indeX)/nd[1]
+
+                    Psuc[jn,][dd.t] <- sum(index.SS)/nd[1]
+
+                    Pfut[jn,][dd.t] <- sum(index.FF)/nd[1]
+                }
+            }
+        }
+
+    }
+
+    if (i==1){
+        value <- c(as.vector(t(Psuc)),as.vector(t(Pfut)),as.vector(t(Psucfut)),1-as.vector(t(Psucfut)), rep( EX[1,1]+EX[1,3],times=length(delta.grid[,1])))
+
+        type <- c(rep("success",times=ld.p*i),rep("futility",times=ld.p*i),rep("success or futility",times=ld.p*i),rep("indeterminate",times=ld.p*i),rep("sample size",times=ld.p*i))
+
+        delta.control <- rep(delta.p,times=i*5)
+        delta.treatment <- rep(delta.t,times=i*5)
+        delta <- delta.treatment-delta.control
+
+        stage <- as.vector(t(array(data=paste("stage",1:i),dim=c(i,ld.t))))
+        stage <- factor(stage, levels=paste("stage",1:i))
+        
+        method <-  as.vector(rep("simArm",times=5*ld.t))
+
+        r <- data.frame(value,delta.control,delta.treatment,delta,type,stage,method)
+    }else{
+
+        li <- list(success=Psuc,futility=Pfut,success_and_futility=Psucfut)
+        cum <- gsbCumulativeProbability(list=li)
+        ss <- gsbSampleSize(design=design,cum.prob.suc.fut=cum$cum.suc.fut)
+
+        value <- c(as.vector(t(Psuc)),as.vector(t(Pfut)),as.vector(t(Psucfut)),1-as.vector(t(Psucfut)), as.vector(t(cum$cum.suc)),as.vector(t(cum$cum.fut)), as.vector(t(cum$cum.suc.fut)),1-as.vector(t(cum$cum.suc.fut)), as.vector(t(ss)))
+
+        type <- c(rep("success",times=ld.p*i),rep("futility",times=ld.p*i),rep("success or futility",times=ld.p*i),rep("indeterminate",times=ld.p*i),rep("cumulative success",times=ld.p*i),rep("cumulative futility",times=ld.p*i),rep("cumulative success or futility",times=ld.p*i),rep("cumulative indeterminate",times=ld.p*i),rep("sample size",times=ld.p*i))
+
+        delta.control <- rep(delta.p,times=i*9)
+        delta.treatment <- rep(delta.t,times=i*9)
+        delta <- delta.treatment-delta.control
+
+        stage <- rep(as.vector(aperm(array(data=paste("stage",1:i),dim=c(i,ld.t)),c(2,1))),times=9)
+        stage <- factor(stage, levels=paste("stage",1:i))
+        
+        method <-  rep("simArm",length(value))
+
+        r <- data.frame(value,delta.control,delta.treatment,delta,type,stage,method)
+
+    }
+
+    class(r) <- c("gsbSimArm.result","data.frame")#noDif
+
+    if(sum(warning.index)!=0){
+        war <- cbind(delta.t[as.logical(warning.index)],delta.p[as.logical(warning.index)],warning.index[as.logical(warning.index)])
+        dimnames(war) <- list(paste("# ",1:sum(as.logical(warning.index))),c("delta.treatment","delta.control","incorrect in stages >="))
+        class(war) <- c(class(war),"tr")
+    }else{
+        war <- 0
+        class(war) <- c(class(war),"fa")
+    }
+
+    return(list(OC=r,warnings=war,delta.grid=delta.grid))
 }
 
 
@@ -2478,285 +2764,7 @@ plot.boundary <- function(x, what){
  return(r)
 }
 
-gsbSimArm <- function(design,
-                      simulation){
 
-    ## design <- design4
-    ## simulation <- simulation4
-
-    EX <- design$trial
-    CR <- design$criteria
-   
-    i <- design$nr.stages
-
-    nr.of.sim  <- simulation$nr.sim
-    delta.grid <- simulation$truth
-    delta.p <- delta.grid[,1]
-    delta.t <- delta.grid[,2]
-
-    ld.p <- length(delta.p)
-    ld.t <- length(delta.t)
-
-    ##precision dicributions prior and trial
-    if(design$prior.control[1]=="non-informative")
-      design$prior.control <- c(0,0)
-    if(design$prior.treatment[1]=="non-informative")
-      design$prior.treatment <- c(0,0)
-
-    prior <- c(design$prior.control[1],design$prior.treatment[1],design$prior.control[2], design$sigma[1],design$prior.treatment[2], design$sigma[2])
-    sigmaDp <- prior[4]^2/prior[3]      #sigma^2 / n
-    sigmaDt <- prior[6]^2/prior[5]
-    names(sigmaDp) <- "sigma^2 control distr"
-    names(sigmaDt) <- c("sigma^2 treatment distr")
-    prior <- c(prior,sigmaDp,sigmaDt)
-
-    tri <- array(dim=c(i,8),data=c(EX,rep(NA,times=4*i)))#
-    tri[,5] <- EX[,2]^2/EX[,1]
-    tri[,6] <- EX[,4]^2/EX[,3]
-    tri[,7] <- 1/tri[,5]
-    tri[,8] <- 1/tri[,6]
-
-    dimnames(tri) <- list(paste("stage",1:i),c("nr.control","sigma control","nr treatment","sigma treatment","sigma^2 distr. plasebo","sigma^2 distr. treatment","precision distr. control","precision distr. treatment"))
-
-
- #test if patients =0 in stages
-    test.p <- (tri[,1]&tri[,2])!=0
-    test.t <- (tri[,3]&tri[,4])!=0
-
-    Psucfut <- array(data=NA,dim=c(i,length(delta.p)))
-    Psuc <- array(data=NA,dim=c(i,length(delta.p)))
-    Pfut <- array(data=NA,dim=c(i,length(delta.p)))
-
-
-    # index für warnings
-    warning.index <- rep(0,times=ld.p)
-
-
-    for (dd.t in 1:length(delta.t)){
-     #   dd.t <- 1
-
-                                        #nr of simulations
-        nd <- rep(0,times=i+1)
-        nd[1] <- nr.of.sim
-
-                                        #simulate control
-        dt.p <- matrix(nrow=i,ncol=nd)
-        dt.t <- matrix(nrow=i,ncol=nd)
-
-
-        if (i>1){
-            for (k in (1:i)[test.p]){
-                dt.p[k,] <- rnorm(n=nd[1],mean=delta.p[dd.t],sd=sqrt(tri[k,5]))#simulate !
-            }
-                d.p <- dt.p[,1:nd[1]]
-            }
-
-        if ((i==1)&test.p[1]){
-            dt.p <-  rnorm(n=nd[1],mean=delta.p[dd.t],sd=sqrt(tri[1,5]))
-            d.p <- t(as.matrix(dt.p))
-        }
-
-
-        if (i>1){
-            for (k in (1:i)[test.t]){
-                dt.t[k,] <- rnorm(n=nd[1],mean=delta.t[dd.t],sd=sqrt(tri[k,6]))#simulate !
-            }
-            d.t <- dt.t[,1:nd[1]]
-        }
-
-        if ((i==1)&test.t[1]){
-            dt.t <-  rnorm(n=nd[1],mean=delta.t[dd.t],sd=sqrt(tri[1,6]))
-            d.t <- t(as.matrix(dt.t))
-        }
-
-                                        #test if there are patients in stage, update if there are
-        if (test.p[1]){
-            post.p <- gsbBayesUpdate(alpha=rep(prior[1],times=nd[1]),beta=rep(1/prior[7],nd[1]),precisionData=tri[1,7],meanData=d.p[1,],with.alpha=TRUE)##
-        }else{
-            post.p <- list(alpha=rep(prior[1],times=nd[1]),beta=rep(1/prior[7],times=nd[1]))
-        }
-
-        if (test.t[1]){
-            post.t <- gsbBayesUpdate(alpha=rep(prior[2],times=nd[1]),beta=rep(1/prior[8],nd[1]),precisionData=tri[1,8],meanData=d.t[1,],with.alpha=TRUE)##
-        }else{
-            post.t <- list(alpha=rep(prior[2],times=nd[1]),beta=rep(1/prior[8],times=nd[1]))
-        }
-        tt <- list(alpha=post.t$alpha-post.p$alpha,beta=(post.p$beta*post.t$beta)/(post.p$beta+post.t$beta))
-
-        NS <- length(CR[1,1,,1][!is.na(CR[1,1,,1])])
-        if(NS==0){
-            index.SS  <- array(dim=c(1,nr.of.sim),data=FALSE)
-            index.S  <- array(dim=c(1,nr.of.sim),data=FALSE)
-        }
-        if(!(NS==0)){
-
-            qnorm.S <- array(dim=c(NS,nr.of.sim),data=NA)
-            index.S  <- array(dim=c(NS,nr.of.sim),data=NA)
-
-            for (jk in 1:NS){
-                qnorm.S[jk,] <- qnorm(1-CR[2,1,jk,1],tt$alpha,1/sqrt(tt$beta))
-                index.S[jk,] <- qnorm.S[jk,]>CR[1,1,jk,1]
-            }
-
-            index.SS <- Reduce('&',as.data.frame(t(index.S)))
-        }
-
-
-        NF <- length(CR[1,2,,1][!is.na(CR[1,2,,1])])
-        if(NF==0){
-            index.FF  <- array(dim=c(1,nr.of.sim),data=FALSE)
-            index.F  <- array(dim=c(1,nr.of.sim),data=FALSE)
-        }
-        if(!(NF==0)){
-            qnorm.F <- array(dim=c(NF,nr.of.sim),data=NA)
-            index.F  <- array(dim=c(NF,nr.of.sim),data=NA)
-
-            for (jk in 1:NF){
-                qnorm.F[jk,] <- qnorm(CR[2,2,jk,1],tt$alpha,1/sqrt(tt$beta))
-                index.F[jk,] <- qnorm.F[jk,]<CR[1,2,jk,1]
-            }
-            index.FF <- Reduce('&',as.data.frame(t(index.F)))
-        }
-
-        indeX <- index.SS | index.FF
-
-
-        Psucfut[1,][dd.t] <- sum(indeX)/nd[1]
-        Psuc[1,][dd.t] <- sum(index.SS)/nd[1]
-        Pfut[1,][dd.t] <- sum(index.FF)/nd[1]
-
-        nd[2] <- sum(!indeX)
-
-        if (i >1){
-            for (jn in 2:i){
-               #  jn <- 2
-
-                #for warning message....
-                if (nd[jn]<simulation$warnings.sensitivity){
-                    if(warning.index[dd.t]==0){
-                        warning.index[dd.t] <- jn
-                    }
-                }
-
-                                        #prevent d[jn,] incorrect dimension error
-                if(nd[jn]<2){
-                    Psucfut[jn,][dd.t] <- 0
-                    Psuc[jn,][dd.t] <- 0
-                    Pfut[jn,][dd.t] <- 0
-                    nd[jn+1] <- 0
-                }else{
-
-                    d.p <- d.p[,!indeX]
-                    d.t <- d.t[,!indeX]
-                    if (test.p[jn]){
-                        post.p <- gsbBayesUpdate(alpha=post.p$alpha[!indeX],beta=post.p$beta[!indeX],precisionData=tri[jn,7],meanData=d.p[jn,],with.alpha=TRUE)
-                    }else{
-                        post.p <- list(alpha=post.p$alpha[!indeX],beta=post.p$beta[!indeX])
-                    }
-                    if (test.t[jn]){
-                        post.t <- gsbBayesUpdate(alpha=post.t$alpha[!indeX],beta=post.t$beta[!indeX],precisionData=tri[jn,8],meanData=d.t[jn,],with.alpha=TRUE)
-                    }else{
-                        post.t <- list(alpha=post.t$alpha[!indeX],beta=post.t$beta[!indeX])
-                    }
-
-                    tt <- list(alpha=post.t$alpha-post.p$alpha,beta=(post.p$beta*post.t$beta)/(post.p$beta+post.t$beta))
-
-                    NS <- length(CR[1,1,,jn][!is.na(CR[1,1,,jn])])
-                    if(NS==0){
-                        index.SS  <- array(dim=c(1,nd[jn]),data=FALSE)
-                    }
-                    if(!(NS==0)){
-                        qnorm.S <- array(dim=c(NS,nd[jn]),data=NA)
-                        index.S  <- array(dim=c(NS,nd[jn]),data=NA)
-
-                        for (jk in 1:NS){
-                            qnorm.S[jk,] <- qnorm(1-CR[2,1,jk,jn],tt$alpha,1/sqrt(tt$beta))
-                            index.S[jk,] <- qnorm.S[jk,]>CR[1,1,jk,jn]
-                        }
-
-                        index.SS <- Reduce('&',as.data.frame(t(index.S)))
-                    }
-
-
-                    NF <- length(CR[1,2,,jn][!is.na(CR[1,2,,jn])])
-                    if(NF==0){
-                        index.FF  <- array(dim=c(1,nd[jn]),data=FALSE)
-                    }
-                    if(!(NF==0)){
-                        qnorm.F <- array(dim=c(NF,nd[jn]),data=NA)
-                        index.F  <- array(dim=c(NF,nd[jn]),data=NA)
-
-                        for (jk in 1:NF){
-                            qnorm.F[jk,] <- qnorm(CR[2,2,jk,jn],tt$alpha,1/sqrt(tt$beta))
-                            index.F[jk,] <- qnorm.F[jk,]<CR[1,2,jk,jn]
-                        }
-                        index.FF <- Reduce('&',as.data.frame(t(index.F)))
-                    }
-
-                    indeX <- index.SS | index.FF
-
-                    nd[jn+1] <- sum(!indeX)
-
-                    Psucfut[jn,][dd.t] <- sum(indeX)/nd[1]
-
-                    Psuc[jn,][dd.t] <- sum(index.SS)/nd[1]
-
-                    Pfut[jn,][dd.t] <- sum(index.FF)/nd[1]
-                }
-            }
-        }
-
-    }
-
-    if (i==1){
-        value <- c(as.vector(t(Psuc)),as.vector(t(Pfut)),as.vector(t(Psucfut)),1-as.vector(t(Psucfut)), rep( EX[1,1]+EX[1,3],times=length(delta.grid[,1])))
-
-        type <- c(rep("success",times=ld.p*i),rep("futility",times=ld.p*i),rep("success or futility",times=ld.p*i),rep("indeterminate",times=ld.p*i),rep("sample size",times=ld.p*i))
-
-        delta.control <- rep(delta.p,times=i*5)
-        delta.treatment <- rep(delta.t,times=i*5)
-        delta <- delta.treatment-delta.control
-
-        stage <- as.vector(t(array(data=paste("stage",1:i),dim=c(i,ld.t))))
-
-        method <-  as.vector(rep("simArm",times=5*ld.t))
-
-        r <- data.frame(value,delta.control,delta.treatment,delta,type,stage,method)
-    }else{
-
-        li <- list(success=Psuc,futility=Pfut,success_and_futility=Psucfut)
-        cum <- gsbCumulativeProbability(list=li)
-        ss <- gsbSampleSize(design=design,cum.prob.suc.fut=cum$cum.suc.fut)
-
-        value <- c(as.vector(t(Psuc)),as.vector(t(Pfut)),as.vector(t(Psucfut)),1-as.vector(t(Psucfut)), as.vector(t(cum$cum.suc)),as.vector(t(cum$cum.fut)), as.vector(t(cum$cum.suc.fut)),1-as.vector(t(cum$cum.suc.fut)), as.vector(t(ss)))
-
-        type <- c(rep("success",times=ld.p*i),rep("futility",times=ld.p*i),rep("success or futility",times=ld.p*i),rep("indeterminate",times=ld.p*i),rep("cumulative success",times=ld.p*i),rep("cumulative futility",times=ld.p*i),rep("cumulative success or futility",times=ld.p*i),rep("cumulative indeterminate",times=ld.p*i),rep("sample size",times=ld.p*i))
-
-        delta.control <- rep(delta.p,times=i*9)
-        delta.treatment <- rep(delta.t,times=i*9)
-        delta <- delta.treatment-delta.control
-
-        stage <- rep(as.vector(aperm(array(data=paste("stage",1:i),dim=c(i,ld.t)),c(2,1))),times=9)
-
-        method <-  rep("simArm",length(value))
-
-        r <- data.frame(value,delta.control,delta.treatment,delta,type,stage,method)
-
-    }
-
-    class(r) <- c("gsbSimArm.result","data.frame")#noDif
-
-    if(sum(warning.index)!=0){
-        war <- cbind(delta.t[as.logical(warning.index)],delta.p[as.logical(warning.index)],warning.index[as.logical(warning.index)])
-        dimnames(war) <- list(paste("# ",1:sum(as.logical(warning.index))),c("delta.treatment","delta.control","incorrect in stages >="))
-        class(war) <- c(class(war),"tr")
-    }else{
-        war <- 0
-        class(war) <- c(class(war),"fa")
-    }
-
-    return(list(OC=r,warnings=war,delta.grid=delta.grid))
-}
 
 type <- NULL
 plot.gsbSimArm.sliced <- function(x,

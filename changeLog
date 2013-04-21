@@ -2,6 +2,8 @@
 -- ChangeLog - gsbDesign --
 ---------------------------
 
+2013-04-21 Florian Gerber (version 0.96-2)
+	* Bug "wrong stage labels" corrected (comment Heinz).
 
 2012-11-05 Florian Gerber (version 0.96-1)
 	* run-time of examples is too long for CRAN.
@@ -56,20 +58,20 @@
 
 2012-04-09 Florian Gerber (version 0.94-3)
 	* plot.gsbMainOut():
-	  - ylab="Probability" for what = "all" and "cumulative all" (comment björn)
-	  - frame around legend removed (comment björn)
-	  - more space between curve and plot bound if what = "sample size" (comment björn)
+	  - ylab="Probability" for what = "all" and "cumulative all" (comment Björn)
+	  - frame around legend removed (comment Björn)
+	  - more space between curve and plot bound if what = "sample size" (comment Björn)
 	  - scales not alternating
 	  - for grid.type="plot" there is now an additional point in each corner of the picture.
 	    This should help to avoid blank areas in the corners (caused by the interpolation).
-	  - color of curve now black iff only 1 stage is plotted and what = "sample size" (comment thomas)
+	  - color of curve now black iff only 1 stage is plotted and what = "sample size" (comment Thomas)
 	* print.gsbSimulation():
-	  - typo (comment björn)
+	  - typo (comment Björn)
 	  - correction in grid display for grid.type = "table" and "manually"
 
 2012-03-30 Florian Gerber (version 0.94-2)
-	* names of title and axis of boundary plots changed (comments heinz)
-	* typos in help corrected (comments heinz)
+	* names of title and axis of boundary plots changed (comments Heinz)
+	* typos in help corrected (comments Heinz)
 	* "not run example" in plot.gsbMainOut() works now
 	  ("%" is a special character even in the example section of a .rd file)
 
@@ -108,7 +110,7 @@
 	  and fkt tab() gives now an error message if "atDelta" not suitable (no NA's).
 
 2012-02-20 Florian Gerber (version 0.93-2)
-	* bug in fkt gsbSimDif() reported by björn.
+	* bug in fkt gsbSimDif() reported by Björn.
 	  the covariance matrix "covmat" is now build correctly
 
 2012-02-11 Florian Gerber (version 0.93)
@@ -158,7 +160,7 @@
 		- grid.type = “manually”
 		- grid.type= “plot” (without dependence on “lhs” package)
 	* “lattice” dependence (no dependence on latest version)
-	* default plot limes (problem of test6 from heinz)
+	* default plot limes (problem of test6 from Heinz)
 	* typos
 	* name of the package changed to “gsbDesign”
 	* input “type” separated in
