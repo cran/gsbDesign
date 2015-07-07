@@ -1,10 +1,12 @@
-## imports
+import(grid, lattice, gsDesign)
+importFrom(stats, approx, na.omit, predict, qnorm, rnorm, runif)
+importFrom(graphics, barplot, plot)
+importFrom(grDevices, colorRampPalette, dev.off, png)
+importFrom(utils, write.table)
 
-## exports
 export(gsb, gsbDesign, gsbSimulation, tab, gsbBayesUpdate, gsbCriteria)
 
 ## not exported functions (access with ::: operator)
-
 ## integer2numeric
 ## rmvnorm
 ## gsbCgrid
@@ -24,13 +26,10 @@ export(gsb, gsbDesign, gsbSimulation, tab, gsbBayesUpdate, gsbCriteria)
 
 ## S3methods
 S3method(summary,gsbMainOut)
-
 S3method(as.data.frame,gsbCriteria)
-
 S3method(print,gsbDesign)
 S3method(print,gsbSimulation)
 S3method(print,gsbMainOut)
-
 S3method(plot,gsbSimulation)
 S3method(plot,gsbMainOut)
 S3method(plot,gsbDesign)

@@ -2,6 +2,11 @@
 -- ChangeLog - gsbDesign --
 ---------------------------
 
+2015-07-07 Florian Gerber (version 0.96-3)
+	* minor modifications to pass the CRAN check without notes.
+	* citations updated
+	* no modifications in the code
+
 2013-04-21 Florian Gerber (version 0.96-2)
 	* Bug "wrong stage labels" corrected (comment Heinz).
 

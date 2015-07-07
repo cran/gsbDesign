@@ -208,15 +208,14 @@ See Gerber et al. (2012) for more details.
 }
 \references{
   \itemize{
-    \item Gerber F, Bornkamp B, Ohlssen D, Schmidli H, Gsponer T (2012). 
+    \item Gerber F, Gsponer T (2015). 
     An R Package for evaluating operating characteristics for a group
     sequential Bayesian design.
-    Journal of Statistical Software, submitted.
+    Journal of Statistical Software, accepted.
     \item Gsponer T, Gerber F, Bornkamp B, Ohlssen D, Vandemeulebroecke
-    M, Schmidli H (2012).
-    Bayesian group sequential designs for clinical trials and their
-    operating characteristics.
-    Pharmaceutical Statistics, submitted.
+    M, Schmidli H (2014).
+    A practical guide to Bayesian group sequential designs.
+    Pharmaceutical Statistics, 13(1) 71-80, DOI: 10.1002/pst.1593
     \item Berry SM, Carlin BP, Lee JJ, and Mueller P
     (2010). Bayesian Adaptive Methods for Clinical
     Trials. Chapman&Hall/CRC, London.

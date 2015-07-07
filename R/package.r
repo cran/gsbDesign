@@ -946,7 +946,7 @@ gsbSimArm <- function(design,
     Pfut <- array(data=NA,dim=c(i,length(delta.p)))
 
 
-    # index für warnings
+    # index for warnings
     warning.index <- rep(0,times=ld.p)
 
 

@@ -1,0 +1,39 @@
+citHeader("To cite `gsbDesign` in publications use:")
+
+citEntry(entry = "Article",
+  title        = "gsbDesign: An R Package for Evaluating the Operating Characteristics of a Group Sequential Bayesian Design",
+  author       = personList(as.person("Florian Gerber"),
+                            as.person("Thomas Gsponer")),
+  journal      = "Journal of Statistical Software, accepted",
+  year         = "2015",
+
+  textVersion  =
+  paste("Florian Gerber, Thomas Gsponer.",
+        "gsbDesign: An R Package for Evaluating the Operating Characteristics of a Group Sequential Bayesian Design.",
+        "Journal of Statistical Software, accepted."),
+)
+
+citEntry(entry = "Article",
+  title        = "A practical guide to Bayesian group sequential designs",
+  author       = personList(as.person("Thomas Gsponer"),
+                            as.person("Florian Gerber"),
+                            as.person("Bjorn Bornkamp"),
+                            as.person("David Ohlssen"),
+                            as.person("Marc Vandemeulebroecke"),
+                            as.person("Heinz Schmidli")),
+  journal      = "Pharmaceutical Statistics",
+  year         = "2014",
+  volume       = "13",
+  number       = "1",
+  pages        = "71--80",
+  url          = "http://dx.doi.org/10.1002/pst.1593",
+  doi          = "10.1002/pst.1593",
+  issn         = "1539-1612",
+
+  textVersion  =
+  paste("Thomas Gsponer, Florian Gerber, Bjorn Bornkamp, David Ohlssen, Marc Vandemeulebroecke, Heinz Schmidli (2014).",
+        "A practical guide to Bayesian group sequential designs.",
+        "Pharmaceutical Statistics, 13(1), 71-80.",
+        "DOI:10.1002/pst.1593"),
+)
+

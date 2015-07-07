@@ -147,7 +147,8 @@ datgraph2 <- datgraph2[order(datgraph2$delta),]
 
 
 ## plots
-p1 <- qplot(delta,value,geom="blank",color=type,facets=.~stage,data=datgraph2, xlab=expression(delta))
+p1 <- qplot(delta,value,geom="blank",color=type,facets=.~stage,data=datgraph2,
+xlab=expression(delta))
 
 p1+geom_line(size=1.5)+scale_color_manual(values = c("cumulative futility" = "dark red",
 "indeterminate" = "orange", "cumulative success" = "dark green"))
