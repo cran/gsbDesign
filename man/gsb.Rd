@@ -18,7 +18,6 @@ The user also has to specify the number of patients for each stage of
 the group sequential design, and the standard deviation (sigma) of the endpoint (assumed to be known).\cr
 The operating characteristics are either evaluated for a user-specified grid of true treatment differences, or for a grid or set of true treatment means for the two arms. The operating characteristics of main interest are the probabilities of success and futility at each interim analysis, and the expected sample size.\cr
 The main function of the package is \code{gsb()}. 
-
 }
 \usage{
 gsb(design = NULL, simulation = NULL)
@@ -179,7 +178,7 @@ gsbSimulation(truth = NULL,
   }
 }
 \details{
-See Gerber et al. (2012) for more details.
+See Gerber and Gsponer (2016) for more details.
 }
 \value{
 \item{OC }{a \code{data.frame} containing the resulting operating characteristics
@@ -208,26 +207,24 @@ See Gerber et al. (2012) for more details.
 }
 \references{
   \itemize{
-    \item Gerber F, Gsponer T (2015). 
-    An R Package for evaluating operating characteristics for a group
-    sequential Bayesian design.
-    Journal of Statistical Software, accepted.
-    \item Gsponer T, Gerber F, Bornkamp B, Ohlssen D, Vandemeulebroecke
-    M, Schmidli H (2014).
-    A practical guide to Bayesian group sequential designs.
+    \item Gerber F, Gsponer T (2016). 
+    gsbDesign: An R Package for Evaluating the Operating Characteristics of a Group Sequential Bayesian Design.
+    Journal of Statistical Software, 69(11), 1-23, DOI: 10.18637/jss.v069.i11
+    \item Gsponer T, Gerber F, Bornkamp B, Ohlssen D, Vandemeulebroecke M, Schmidli H (2014).
+    A Practical Guide to Bayesian Group Sequential Designs.
     Pharmaceutical Statistics, 13(1) 71-80, DOI: 10.1002/pst.1593
     \item Berry SM, Carlin BP, Lee JJ, and Mueller P
-    (2010). Bayesian Adaptive Methods for Clinical
-    Trials. Chapman&Hall/CRC, London.
+    (2010). Bayesian Adaptive Methods for Clinical Trials.
+    Chapman&Hall/CRC, London.
     \item Jennison C, and Turnbull BW (2000). Group Sequential Methods
     with Applications to Clinical Trials. Chapman&Hall/CRC, London.
-    \item Spiegelhalter DJ, Abrams KR, and Myles, J. P. (2004). Bayesian
+    \item Spiegelhalter DJ, Abrams KR, and Myles, JP (2004). Bayesian
     Approaches to Clinical Trials and Health Care Evaluation. Wiley, New
     York.
   }
 }
 \author{
-Florian Gerber, Thomas Gsponer
+Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 \seealso{
 \code{\link{plot.gsbMainOut}}, \code{\link{tab}}, \code{\link{gsbBayesUpdate}}, \code{\link{gsbCriteria}}, \code{\link{gsb-package}}

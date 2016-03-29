@@ -63,7 +63,7 @@ tab(x,
 }
 
 \author{
-Florian Gerber
+Florian Gerber <florian.gerber@math.uzh.ch>
 }
 
 \examples{

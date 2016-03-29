@@ -2,6 +2,12 @@
 -- ChangeLog - gsbDesign --
 ---------------------------
 
+2016-03-23 Florian Gerber (version 1.00-0)
+	* Update citation information for JSS article.
+	* Change colors in plot.gsbSimArm.result()
+	* Add JSS article as vignette "JSS-gsbDesign"
+	* Add code JSS article as demo "usage.R" and "poc.R"
+
 2015-07-07 Florian Gerber (version 0.96-3)
 	* minor modifications to pass the CRAN check without notes.
 	* citations updated

@@ -100,7 +100,7 @@ Methods for plotting the results of \code{gsb()}.}
 uses the R-package 'lattice'. 
 }
 \author{
-Florian Gerber, Thomas Gsponer
+Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 
 \seealso{

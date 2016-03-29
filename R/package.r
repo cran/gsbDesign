@@ -221,9 +221,24 @@ plot.gsbSimArm.result <- function(x,
     }
   }
 
-  col.l <- colorRampPalette(c('blue','green', 'orange','yellow'))(30)
-
-
+  col.l <- c("#F7FBFF", "#F4F9FE", "#F2F8FD", "#F0F7FD", "#EEF5FC", "#ECF4FB", 
+             "#EAF3FB", "#E8F1FA", "#E6F0F9", "#E4EFF9", "#E2EEF8", "#E0ECF7", 
+             "#DEEBF7", "#DCEAF6", "#DAE8F5", "#D8E7F5", "#D6E6F4", "#D5E5F4", 
+             "#D3E3F3", "#D1E2F2", "#CFE1F2", "#CDDFF1", "#CBDEF0", "#C9DDF0", 
+             "#C7DBEF", "#C5DAEE", "#C1D9ED", "#BED7EC", "#BBD6EB", "#B8D5EA", 
+             "#B5D3E9", "#B1D2E7", "#AED1E6", "#ABCFE5", "#A8CEE4", "#A4CCE3", 
+             "#A1CBE2", "#9ECAE1", "#9AC8E0", "#96C5DF", "#92C3DE", "#8EC1DD", 
+             "#89BEDC", "#85BCDB", "#81BADA", "#7DB8DA", "#79B5D9", "#75B3D8", 
+             "#71B1D7", "#6DAFD6", "#69ACD5", "#66AAD4", "#62A8D2", "#5FA6D1", 
+             "#5CA3D0", "#58A1CE", "#559FCD", "#529DCC", "#4E9ACB", "#4B98C9", 
+             "#4896C8", "#4493C7", "#4191C5", "#3E8EC4", "#3C8CC3", "#3989C1", 
+             "#3686C0", "#3484BE", "#3181BD", "#2E7EBC", "#2C7CBA", "#2979B9", 
+             "#2776B8", "#2474B6", "#2171B5", "#1F6FB3", "#1D6CB1", "#1B69AF", 
+             "#1967AD", "#1764AB", "#1562A9", "#135FA7", "#115CA5", "#0F5AA3", 
+             "#0D57A1", "#0B559F", "#09529D", "#084F9A", "#084D96", "#084A92", 
+             "#08478E", "#08458A", "#084286", "#083F82", "#083D7E", "#083A7A", 
+             "#083776", "#083572", "#08326E", "#08306B")
+  
   if (!(what=="cumulative all"|| what=="all" || what=="sample size")){
     x <- x$OC
     y <- subset(x, as.numeric(x$stage)%in%stages & x$delta.control<=range.delta.control[2]& x$delta.control>=range.delta.control[1]& x$delta.treatment<=range.delta.treatment[2]& x$delta.treatment>=range.delta.treatment[1] & x$type==what)

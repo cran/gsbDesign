@@ -24,7 +24,7 @@ gsbCriteria(criteria, priorMean, postPrecision, weight)
 }
 
 \author{
-Florian Gerber, Thomas Gsponer
+Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 \note{
 This function is used in function \code{gsb()}. 

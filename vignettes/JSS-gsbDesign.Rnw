@@ -1,0 +1,1180 @@
+%\VignetteIndexEntry{JSS-gsbDesign}
+%\VignetteDepends{gsbDesign}
+%\VignettePackage{gsbDesign}
+
+
+\documentclass[nojss]{jss}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% almost as usual
+\author{Florian Gerber\\University of Zurich \And
+        Thomas Gsponer\\University of Berne}
+\title{\pkg{gsbDesign}: An \proglang{R}~Package for Evaluating\\
+the Operating Characteristics of a\\
+Group Sequential Bayesian Design}
+
+\Plainauthor{Florian Gerber, Thomas Gsponer} 
+
+
+\Plaintitle{An R~Package for Evaluating
+the Operating Characteristics of a
+Group Sequential Bayesian Design}
+
+\Shorttitle{\pkg{gsbDesign}: Group Sequential Bayesian Design in \proglang{R}} 
+
+\Abstract{ 
+The \proglang{R}~package \pkg{gsbDesign} provides functions to evaluate the operating 
+characteristics of Bayesian group sequential clinical trial designs. 
+More specifically, we consider clinical trials with interim analyses, which compare a treatment with a control, and where the endpoint is normally distributed. 
+Prior information can either be specified for the dif-ference of treatment and control, or separately for the effects in the treatment and the control groups. 
+At each interim analysis, the decision to stop or continue the trial is based on the posterior distribution of the difference between treatment and control. 
+The decision at the final analysis is also based on this posterior distribution. 
+Multiple success and/or futility criteria can be specified to reflect adequately medical decision-making. 
+We describe methods to evaluate the operating characteristics of such designs for scenar-ios corresponding to different true treatment and control effects. 
+The characteristics of main interest are the probabilities of success and futility at each interim analysis, and the expected sample size. 
+We illustrate the use of \pkg{gsbDesign} with a detailed case study.
+}
+
+
+\Keywords{adaptive design, Bayesian inference, clinical trials, clinical trial monitoring, expected sample size, group sequential design, interim analyses, operating characteristics, stopping criteria}
+\Plainkeywords{adaptive design, Bayesian inference, clinical trials, clinical trial monitoring, group sequential design, expected sample size, interim analyses, operating characteristics, stopping criteria} 
+
+\Address{
+  Florian Gerber\\
+  Institute of Mathematics\\
+  University of Zurich\\
+  Winterthurerstrasse 190\\
+  CH-8057 Zurich, Switzerland\\
+  E-mail: \email{florian.gerber@math.uzh.ch}\\
+}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[english]{babel}
+\usepackage{amssymb}
+\usepackage{booktabs}
+
+\graphicspath{{Figures/}}
+
+
+\begin{document}
+This document was published in a similar form in
+
+Gerber F, Gsponer T (2016). 
+``gsbDesign: An R Package for Evaluating the Operating Characteristics of a Group Sequential Bayesian Design.''
+Journal of Statistical Software, 69(11), 1-23.
+\href{doi:10.18637/jss.v069.i11}{http://doi.org/10.18637/jss.v069.i11}.
+
+The R code of this vignette is accessible via
+\begin{Schunk}
+\begin{Soutput}
+R> library("gsbDesign")
+R> demo("usage")           # code of section 4
+R> demo("PoC")             # code of section 5
+\end{Soutput}
+\end{Schunk}
+
+
+\newpage
+\section[Introduction]{Introduction}
+In traditional clinical trials, patients are randomized to a 
+treatment or a control (e.g., placebo) arm. 
+At the end of the trial the data are
+analyzed, comparing the two arms. 
+Extensions of this setting are group sequential
+clinical trials \citep*{Jennison2000}.
+These adaptive designs have one or more interim analyses,
+where decisions are made on whether to stop or
+continue the trial. 
+The advantage of a group sequential
+design is that futile trials can be stopped early, if the
+treatment is ineffective. In that case, useless treatment is avoided and money saved.
+On the other hand, studies can be stopped early for success, which 
+may result in faster access to the new treatment.
+
+The critical aspect of a group sequential design is the decision at
+each interim analysis on whether to stop or continue the
+trial. Because Bayesian approaches are particularly well suited to support
+decision-making, several authors proposed these for the monitoring of group
+sequential clinical trials; for a review and references see
+for example the books by \citet{Spiegelhalter2004} and by
+\citet{Berry2011}.
+
+The Bayesian framework also facilitates the incorporation of external information through informative priors. 
+For example, historical trials often contain relevant information on the control arm that can be quantified by priors. 
+Hence, fewer patients may then be randomized to the control arm, which reduces the cost and duration of the clinical trial \citep*{Pocock1976, Neuenschwander2010CT, Schmidli2014}. 
+Furthermore, meta-analytic approaches can be used to include information on both the treatment and the control arms \citep{Spiegelhalter2004, Schmidli2013}.
+
+We consider group sequential Bayesian trial designs that incorporate decision 
+making based on the posterior distribution
+of the difference between the treatment and the control arms.
+The posterior distribution contains the information from
+the ongoing clinical trial and the external information captured in the prior 
+distribution.
+
+In order to reflect medical decision-making, several stopping criteria 
+based on this posterior distribution may be combined. 
+Such a combination of multiple criteria goes beyond the significance
+testing framework of classical group sequential designs, and can, for example, include requirements on the observed effect
+size. The traditional sole focus on significance testing has
+also been criticized from a frequentist perspective
+\citep*{Armitage1989JoCE,Kieser2005PS,Carroll2009PS,Chuang-Stein2011PS,Chuang-Stein2011DIJ}.
+
+
+The described approach is well suited to clinical trials 
+conducted in the learning phases of drug development.
+Here, quantitative decision criteria based on the
+probability of achieving a clinically meaningful treatment effect may
+justify further investment in a novel compound \citep*{Cartwright2010,Gsteiger2013,Fisch2014}.
+
+
+Once stopping criteria have been defined to correspond with clinical
+decision-making, it is important to evaluate the operating
+characteristics of the Bayesian group sequential design. To do so, some true effects 
+of the treatment and control arms are assumed and the probability of
+stopping for success or futility, as well as the expected sample size, are
+calculated \citep*{Emerson2007a, Emerson2007b}. 
+
+In this article, we propose the \proglang{R} \citep{R} package 
+\pkg{gsbDesign} \citep*{gsbDesign} to evaluate the
+operating characteristics of such group sequential Bayesian designs
+available from the Comprehensive R Archive Network (CRAN) at \url{https://CRAN.R-project.org/package=gsbDesign}. 
+It supports designs with two arms, normal endpoints, and known standard deviations of the effects in the treatment 
+and control arms.
+As shown by \citet{Spiegelhalter2004}, this setting can be extended to many other types of outcome data by 
+forming an appropriate approximate normalized likelihood; see \citet*{Gsponer2012PS} for some examples.
+We consider the case where the number of patients per interim analysis is known at the beginning of the trial, 
+although a more flexible approach has been proposed in a classical framework by \citet*{Burington2003}.
+
+Several software packages exist that evaluate group sequential clinical designs, e.g., \pkg{S+SeqTrial} \citep{SeqTrial}, 
+\pkg{PEST} \citep{PEST}, \pkg{ADDPLAN} \citep{ADDPLAN}, \pkg{East} \citep{East}, and \pkg{FACTS} \citep{FACTS}.
+However, to the best of our knowledge, \pkg{gsbDesign} is the only package that can both incorporate
+prior information and also allows the user to specify multiple decision criteria. 
+
+This article provides a detailed description on how to compute the operating characteristics for Bayesian group sequential designs, and how to use the 
+\pkg{gsbDesign} package in practice. We
+structured the paper as follows: In Section~\ref{gsb}, the general setup of
+Bayesian group sequential designs is presented. In Section~\ref{opch}, the
+evaluation of their operating characteristics is described, first for
+the case where prior information on the difference between treatment and control is
+available, and then for the case where prior information on the
+treatment and control arms is available. In Section~\ref{usgs}, the use of the \proglang{R}~package
+\pkg{gsbDesign} is explained in detail. Finally, in Section~\ref{cast}, a case study
+is presented, followed by a short conclusion.
+
+
+\section[Bayesian Design]{General setup of the Bayesian design}\label{gsb}
+Two-arm trials with zero, one, or more interim analyses are
+considered. At each analysis, the success and futility criteria are
+evaluated to decide if the trial should be stopped. The model-ing
+framework assumes continuous outcome data with normally distributed
+errors. However, as shown by \citet{Spiegelhalter2004}, by forming an
+appropriate approximate normalized likelihood, many other types of
+outcome data with corresponding sampling models (e.g., count data with
+an assumed Poisson distribution) can be approximated with this setup.
+
+The criteria are based on the posterior distribution of the
+treatment effect $\delta$, where $\delta$ is specified in terms of
+improvement over the control treatment (i.e., positive values are used
+to express the benefit of the experimental treatment over the control).
+
+An arbitrary number of success and futility criteria can be specified
+at each analysis. The success criteria have the form $\Prob\{\delta >
+s\, \mid\, \text{data}\} \geq p$ and the futility criteria have the form
+$\Prob\{\delta < f\, \mid\, \text{data}\} \geq q$. Here, $s$ and $f$ are
+user-specified effect thresholds, $p$ and $q$ are user-specified
+probability thresholds.
+
+Prior information can either be available for the treatment
+difference $\delta$, or for the effect in the control arm,
+$\mu_1$, and the treatment arm, $\mu_2$. \pkg{gsbDesign} supports
+only normally distributed prior information. The variances of the prior
+distributions for control and treatment arms have the form
+$\sigma_1^2/n_{10}$ and $\sigma_2^2/n_{20}$, respectively. Here,
+$n_{10}$ and $n_{20}$ correspond to the prior information in terms of
+number of patients in the control and the treatment arms, respectively. It is
+assumed that single observations in the two arms have
+variances $\sigma_1^2$ and $\sigma_2^2$.
+
+Thus, the full specification of the design requires:
+\begin{itemize}
+\item $\sigma_k$, $k=1,2$: standard deviations for control arm 
+ ($k=1$) and treatment arm ($k=2$);
+\item $n_{k0}$, $k=1,2$: quantification of prior information per arm;
+\item $\eta_{k0}$, $k=1,2$: prior expected response per arm; 
+\item $I$: the number of interim analyses including final analysis;
+\item $n_{ki}$, $i=1,\dots,I$: the added number of patients per arm and interim. Hence,
+the total number of patients in arm $k$ at interim $i$ is $N_{ki} = \sum_{j=1}^i n_{kj}$;
+\item $s_{ir}$, $i=1,\dots,I$, $r=1,\dots,R_{si}$: effect thresholds for
+ each success criterion at each interim. $R_{si}$ being the number of
+ success criteria at interim $i$;
+\item $p_{ir}$, $i=1,\dots,I$, $r=1,\dots,R_{si}$: probability thresholds for
+ each success criterion at each interim;
+\item $f_{ir}$, $i=1,\dots,I$, $r=1,\dots,R_{fi}$: effect thresholds for
+ each futility criterion at each interim. $R_{fi}$ being the number of
+ futility criteria at interim $i$;
+\item $q_{ir}$, $i=1,\dots,I$, $r=1,\dots,R_{fi}$: probability thresholds for
+ each futility criterion at each interim.
+\end{itemize}
+
+
+All $R_{fi}$ futility criteria have to be fulfilled to stop
+for futility at an interim or the final analysis~$i$. 
+Similarly, all $R_{si}$ success criteria have to be fulfilled to stop for success.
+If the trial is neither
+stopped for success nor for futility, the trial continues (unless the
+last analysis $i=I$ has been reached).
+
+
+
+\section[Operating characteristics]{Operating characteristics}\label{opch}
+Given a set of scenarios for the true value of $\delta$ and a set of
+design parameters, the operating characteristics of main interest are
+the probabilities of success and futility at each interim analysis,
+and the expected sample size. For example, if the true treatment
+effect was small, we could examine whether the design would lead to a
+high probability of early stopping for futility. On the other hand, if the true
+treatment effect was large, we could examine whether the design would
+lead to a high probability of early stopping for success.
+
+We consider simulation and numerical integration for computing the
+operating characteristics. The former simulates a large number of
+trials given some true treatment effects of interest. At each interim analysis, we
+compute the posterior distribution of the treatment effect given the
+data and evaluate the stopping criteria based on the trials not
+stopped at the previous interim analysis. The latter translates the
+criteria from the posterior distribution of the treatment effect to
+the distribution of the observed treatment effect. The precision
+related to the treatment effect estimates at each interim analysis can be calculated
+analytically (which is a consequence of assuming a known standard deviation
+associated with each treatment group in the design setup). Under the
+assumption of non-informative priors ($n_{k0}=0$, $k=1,2$), this approach
+yields boundaries on the treatment effect scale that can be translated
+into a number of standard frequentist criteria such as conditional
+probabilities and $p$~values. We then use the \proglang{R}~package
+\pkg{gsDesign} \citep{Anderson2011} for numerical integration as
+described by \citet{Jennison2000}.
+
+\subsection{Prior information on the treatment effect}\label{trtdiff}
+Let $Y_{kij}\sim N(\mu_k, \sigma_k^2)$ denote the observations for
+treatment $k=1,2$ at interim $i=1,\dots,I$ for subject
+$j=1,\dots,n_{ki}$.
+
+The aggregated treatment effect at interim $i$ is
+$D_i=\bar Y_{2i} - \bar Y_{1i}$ with
+$\bar Y_{ki}=(N_{ki})^{-1}\sum_{l=1}^i\sum_{j=1}^{n_l} Y_{klj}$ and
+$N_{ki}=n_{k1}+\cdots+n_{ki}$. Thus, $D_i\sim
+N(\delta,\sigma_1^2/N_{1i}+\sigma_2^2/N_{2i})$ with
+$\delta=\mu_2-\mu_1$.
+
+Assume prior information is available for the treatment effect:
+$\delta\sim N(\alpha_0, \sigma_1^2/n_{10}+\sigma_2^2/n_{20})$. This
+prior reflects information on the treatment effect as if $n_{10}$
+and $n_{20}$ patients had been treated with the control and the test
+treatment, respectively.
+
+For Bayesian updating, it is convenient to parametrize the normal
+distribution not in terms of variances but in terms of precisions. The
+precision is the inverse of the variance. The prior precision is
+denoted by $\beta_0=n_{10}n_{20}/(n_{10}\sigma_2^2+n_{20}\sigma_1^2)$
+and the precision of the observed treatment effect at interim $i$ is denoted
+by $B_i=N_{1i}N_{2i}/(N_{1i}\sigma_2^2+N_{2i}\sigma_1^2)$. Normal
+distributions that are parametrized with the precision are denoted by
+$N_P(\,\cdot\,,\,\cdot\,)$.
+
+The posterior is proportional to the likelihood times the prior. Here,
+the likelihood and the prior are $D_i\,\mid\,\delta \sim N_P(\delta,B_i)$ and
+$\delta\sim N_P(\alpha_0,\beta_0)$, respectively.
+
+A normal likelihood with a normal prior leads to a conjugate analysis, and hence 
+a normally distributed posterior. More precisely, the posterior expectation is a weighted
+average of the prior expectation and the sample mean, and the posterior precision
+is the sum of the prior and sample precisions. Thus, a sequential update yields
+the normal posterior distribution at interim $i$ with expectation $\alpha_i
+=\omega_i\alpha_0 + (1-\omega_i) D_i$ with
+$\omega_i=\beta_0/\beta_i$ and precision
+$\beta_i=\beta_0+B_i$.
+
+To characterize the distribution of $D_i$, we use the fact that the
+sequence $Z_1=D_1\sqrt{B_1},\dots,Z_I=D_I\sqrt{B_I}$ is multivariate
+normal with $\E\{Z_i\}=\delta\sqrt{B_i}$, $i=1,\dots,I$ and
+$\COV\{Z_i,Z_j\}=\sqrt{B_i/B_j}$, $1\leq i \leq j\leq
+I$. \citet{Jennison2000} call this the canonical joint distribution
+for the parameter
+$\delta$ with information levels $B_1,\dots,B_I$.
+
+This formulation is convenient for both approaches, simulation and
+numerical integration.
+
+\subsubsection{Simulation}\label{sim1}
+When evaluating the operating characteristics of a design, a range of
+true treatment effect values or scenarios, denoted by $\delta_u$,
+$u=1,\dots,U$, is considered. In the case of the simulation
+approach, a complete set of interim
+treatment effects, $D_i$, $i=1,\dots,I$, is generated for a large
+number of trials ($T_0$) and each of the scenarios. To simulate the $D_i$, we use the canonical joint
+distribution for $\delta$.
+
+At each interim analysis, the posterior distribution is updated and the
+decision criteria are applied. The operating characteristics are then
+derived by computing the proportion of trials for which the success
+and/or futility criteria are fulfilled. Note that the denominator for
+the computation of the proportion is not the same at each interim,
+because, at interim~$i+1$, we only have to consider the trials that continued from the previous analysis~$i$. 
+Therefore, $T_0$ must be large enough to ensure that enough simulated trials are 
+continued to the final analysis.
+
+The simulation is summarized in the following pseudo-algorithm.
+\begin{itemize}
+\item[For] a large $T_0$ and each $\delta_u$ do
+\begin{itemize}
+\item[For] each $i=1,\dots,I$ do
+\begin{enumerate}
+\item Simulate $D_i^{(t)}$, $t=1,\dots,T_{i-1}$ with $T_{i-1}$ the number
+ of trials not stopped at interim~$i-1$.
+\item Recursively compute the Bayesian update of the posterior distribution:
+\begin{align*}
+&\beta_i = \beta_0 + B_i,
+&\alpha_i^{(t)} = w_i \alpha_0 + (1 - w_i) D_i^{(t)} .
+\end{align*}
+\item Compute $T^S_i$, the number of trials fulfilling all success
+ criteria at interim $i$.
+%\begin{align*}
+%(s_{ri}-\alpha_i^{(t)})\sqrt{\beta_i} \leq \Phi^{-1}(1-p_{ri})
+%\end{align*}
+\item Compute probability of success at stage $i$ as $T^S_i/T_{i-1}$.
+\item Compute $T^F_i$, the number of trials fulfilling all futility
+ criteria at interim $i$.
+%\begin{align*}
+%(f_{ri}-\alpha_i^{(t)})\sqrt{\beta_i} \geq Q_N(q_{ri})
+%\end{align*}
+\item Compute probability of futility at stage $i$ as $T^F_i/T_{i-1}$.
+\item Set $T_i=T_{i-1}-T^S_i-T^F_i$.
+\end{enumerate}
+\item[End] loop for $i$.
+\end{itemize}
+\item[End] loop for $\delta_u$.
+\end{itemize}
+
+\subsubsection{Numerical integration}\label{numint1}
+The decision criteria are formulated in terms of the
+posterior distribution of the treatment effect $\delta$. These
+criteria can be transformed and formulated in terms of the
+distribution of the observed treatment effects $D_i$.
+
+The success criteria are fulfilled if $(s_{ir} -
+\alpha_i)\sqrt{\beta_i} \leq Q_N(1-p_{ir})$, where $Q_N(\varepsilon)$
+denotes the $\varepsilon\times100\%$ quantile of a standard normal
+distribution. Solving for $D_i$ yields the success criterion that $r$ is
+fulfilled if $D_i \geq S_{ir} = \{s_{ir} - \omega_i\alpha_0 -
+\beta_i^{-1/2}Q_N(1-p_{ir})\}/(1-\omega_i)$. The trial will be stopped
+if all success criteria at interim analysis~$i$ are fulfilled, i.e., if
+$D_i\geq\max_{r}S_{ir}=S_i$.
+
+Similarly, all futility criteria at interim analysis~$i$ are fulfilled if $D_i
+\leq \min_r F_{ir}=F_i$, where $F_{ir}= \{f_{ir} - \omega_i\alpha_0 -
+\beta_i^{-1/2}Q_N(q_{ir})\}/(1-\omega_i)$.
+
+We now have for each interim analysis a lower and an upper bound. If
+the observed treatment effect $D_i$ at interim $i$ is beyond
+these bounds, the trial is stopped. This situation is similar
+to the setting of classical group sequential designs,
+where at each interim a decision is taken to stop the trial if a
+certain standardized test statistic exceeds some threshold.
+
+Thus, our group sequential Bayesian design yields a sequence of test
+statistics $\{D_1,\dots,D_I\}$, which is the same as for a classical
+group sequential design with different
+variances and unequal numbers of patients in the two treatment
+arms. \citet{Jennison2000} provide efficient numerical integration
+techniques for computing probabilities of crossing thresholds based on
+the canonical joint distribution of $\delta$ with information levels
+$\{B_1,\dots,B_I\}$.
+
+To derive the operating characteristics, we therefore need to compute
+$\Prob[\{(Z_i\geq u_i)\text{ or }(Z_i \leq l_i)\}\text{ and }
+l_j<Z_j<u_j\,\,\forall j<i]$, where $u_i=S_i\sqrt{B_i}$ and
+$l_i=F_i\sqrt{B_i}$. The function \code{gsProbability} from the
+\proglang{R}~package \pkg{gsDesign} \citep{Anderson2011} implements the numerical
+integration techniques for computing
+these probabilities.
+
+\subsection{Prior information on both treatment arms}\label{botharms}
+We consider the aggregated arm-wise treatment response at interim $i$,
+which is given by $\bar
+Y_{ki}=(N_{ki})^{-1}\sum_{l=1}^i\sum_{j=1}^{n_l} Y_{klj}$ and
+$N_{ki}=n_{k1}+\cdots+n_{ki}$.
+
+Assume that there is prior information available for both the control
+and treatment arms: $\mu_k\sim N_P(\eta_{k0},\gamma_{k0})$, with
+$\gamma_{k0}=n_{k0}/\sigma_k^2$. In this case, the prior to posterior updating is done
+per arm: $\mu_k\mid\bar Y_{ki}\sim N_P(\eta_{ki},\gamma_{ki})$ with
+$\eta_{ki}=\omega_{ki}\eta_{k0}+(1-\omega_{ki})\bar Y_{ik}$ and
+$\gamma_{ki}=\gamma_{k0}+N_{ki}/\sigma^2_k$.
+
+The posterior for the treatment effect is then $\delta\mid\bar Y_{1i},
+\bar Y_{2i}\sim N_P(\tilde\alpha_i,\tilde\beta_i)$, where
+$\tilde\alpha_i=\eta_{2i}-\eta_{1i}$ and $\tilde\beta_i=
+(1/\gamma_{1i} + 1/\gamma_{2i})^{-1}$.
+
+When conducting the simulation approach, we generate the observed
+stagewise average treatment response, i.e., $\tilde
+Y_{ki}=(n_{ki})^{-1}\sum_{j=1}^{n_{ki}}Y_{kij}$, $i=1,\dots,I$, for a large
+number of trials ($T_0$), under a series of different true average
+treatment responses $\mu_{k0}$, $k=1,2$. The aggregated arm-wise
+treatment response is then $(n_{ki}\tilde Y_{ki}+N_{k,i-1}\bar
+Y_{k,i-1})/(n_{ki}+N_{k,i-1})$.
+
+At each interim analysis the posterior distribution is updated
+arm-wise and transformed to the treatment effect. The decision
+criteria are then applied to the posterior distribution of the
+treatment effect. The operating characteristics are derived by
+computing the proportion of trials that fulfill the success and/or
+futility criteria. Note that the denominator for the
+computation of the proportion is not the same at each interim, because
+at interim $i+1$ we have to consider only the trials not stopped at
+interim $i$.
+
+The simulation is summarized in the following pseudo-algorithm.
+\begin{itemize}
+\item[For] a large $T_0$ and each plausible $\mu_{10}$ and $\mu_{20}$ do
+\begin{itemize}
+\item[For] each $i=1,\dots,I$ do
+\begin{enumerate}
+\item Simulate $\tilde Y_{ki}^{(t)}$, $t=1,\dots,T_{i-1}$, $k=1,2$, with $T_{i-1}$ the number
+ of trials not stopped at interim~ $i-1$.
+\item Compute $\bar Y_{ki}=(n_{ki}\tilde
+Y_{ki}+N_{k,i-1}\bar Y_{k,i-1})/(n_{ki}+N_{k,i-1})$.
+\item Recursively compute the Bayesian update for the posterior distribution per arm:
+\begin{align*}
+&\gamma_{ki} = \gamma_{k0} + N_{ki}/\sigma^2_k,
+&\eta_{ki}^{(t)} = w_{ki} \eta_{k0} + (1 - w_{ki}) \bar Y_{ki}^{(t)} .
+\end{align*}
+\item Transform arm-wise posterior distributions to posterior
+ distribution of treatment effect:
+\begin{align*}
+&\tilde\alpha_i^{(t)} = \eta_{2i}^{(t)}-\eta_{1i}^{(t)},
+&\tilde\beta_i^{(t)}=(1/\gamma_{1i} + 1/\gamma_{2i})^{-1}.
+\end{align*}
+\item Compute $T^S_i$, the number of trials fulfilling all success
+ criteria at interim $i$.
+\item Compute probability of success at stage $i$ as $T^S_i/T_{i-1}$.
+\item Compute $T^F_i$, the number of trials fulfilling all futility
+ criteria at interim $i$.
+\item Compute probability of futility at stage $i$ as $T^F_i/T_{i-1}$.
+\item Set $T_i=T_{i-1}-T^S_i-T^F_i$.
+\end{enumerate}
+\item[End] loop for $i$.
+\end{itemize}
+\item[End] loop for $\mu_{10}$ and $\mu_{20}$.
+\end{itemize}
+
+
+\subsection{Expected sample size}
+The expected sample size in a group sequential design is computed as
+$\sum_{i=1}^I(n_{1i}+n_{2i})\pi_i$, where $\pi_i$ denotes the
+probability of stopping at interim $i$. Once the probabilities of
+stopping for futility and stopping for success are available, the
+expected sample size is straightforward to compute.
+
+\SweaveOpts{engine=R,eps=FALSE,pdf=TRUE}
+\SweaveOpts{prefix=TRUE,prefix.string=Figures/Application,include=TRUE,keep.source=TRUE}
+\setkeys{Gin}{width=\textwidth}
+
+<<preliminaries,echo=FALSE,results=hide>>=
+remove(list=ls())
+set.seed(144)
+options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
+if(!file.exists("./Figures/"))
+    dir.create("./Figures/",recursive=TRUE)
+@
+
+% ----------------------------------------------------------------------
+\section[Using gsbDesign]{Using \pkg{gsbDesign}}\label{usgs}
+Here, we illustrate how to use the \proglang{R}~package \pkg{gsbDesign}. 
+After installation, the package can be loaded by
+<<instloading,echo=TRUE,eval=TRUE>>=
+library("gsbDesign")
+@
+There are three main functions needed for the computation of
+the operating characteristics:
+\begin{itemize}
+  \item \code{gsbDesign} fully specifies the design, i.e., all
+    required parameters described in Section~\ref{gsb}. The
+    function returns an object of class `\code{gsbDesign}'.
+  \item \code{gsbSimulation} specifies the methods for computing the
+    operating characteristics, i.e., whether to use simulation or
+    numerical integration, whether to update per arm or on the
+    treatment effect. The function returns an object of class
+    `\code{gsbSimulation}'.
+  \item \code{gsb} calculates the operating characteristics and takes
+    as arguments an object of class `\code{gsbDesign}' and an object of
+    class `\code{gsbSimulation}'. The function returns an object of
+    class `\code{gsbMainOut}'.
+\end{itemize}
+For objects of class `\code{gsbDesign}', `\code{gsbSimulation}', and
+`\code{gsbMainOut}', there exist \code{print} methods. For the class
+`\code{gsbMainOut}', there further exist \code{summary} and \code{plot}
+methods. More information on specific functions and methods 
+are given in the reference manual of the package.
+
+\subsection{Specifying the design}
+The full specification of a group sequential Bayesian design requires
+the number of interim analyses (including final analysis), the
+standard deviation of individual observations per arm ($\sigma_k$),
+prior specification potentially per arm ($n_{k0}$), number of patients per arm and
+stage ($n_{ki}$), and success and futility criteria per stage ($s_{ir}$,
+$p_{ir}$, $f_{ir}$, $q_{ir}$).
+
+The minimum requirement for the function \code{gsbDesign} is the
+specification for one stage. In this situation the specification will
+be the same in all later stages and the final analysis.
+
+\subsubsection{Prior information on treatment effect}
+The following code shows how to specify such a design with \code{nr.stages} $=4$
+analyses (interim plus final) when prior information is available for
+the treatment effect.
+
+<<des1,echo=TRUE,eval=TRUE,results=verbatim>>=
+design1 <- gsbDesign(nr.stages = 4, patients = c(10, 20), 
+  sigma = c(7, 7), criteria.success = c(0, 0.8, 7, 0.5), 
+  criteria.futility = c(2, 0.8), prior.difference = c(3, 5, 2))
+@
+
+The argument \code{patients} specifies the number of patients ($n_{ki}$)
+per arm and stage. If \code{patients} is a single number, the same
+number of patients is used for all stages and both arms. If it is
+a vector of length 2, the first element of the vector gives the
+number of patients for the control arm in each stage and the second
+element gives the number of patients for the treatment arm in each stage.
+Finally, if the number of patients changes across stages, the argument
+\code{patients} must be a matrix with \code{nr.stages} rows and 2
+columns.
+
+The argument \code{sigma} specifies the standard deviations
+($\sigma_k$) per arm. If \code{sigma} is a single number, the
+standard deviation is the same for both arms. If it is
+a vector of length 2 the first element of the vector gives the
+standard deviation for the control arm and the second element gives the standard
+deviation for the treatment arm.
+
+In the example above, there are $n_{11}=10$ patients in each of the stages
+in the control arm with standard deviation $\sigma_1=7$. In the treatment
+arm there are $n_{21}=20$ patients in each stage with standard
+deviation $\sigma_2=7$.
+
+The argument \code{criteria.success} specifies the success criteria in
+terms of the posterior distribution. The first two elements of the
+vector correspond to effect and probability thresholds for the first
+success criterion, and the second two elements to effect and probability
+thresholds for the second success criterion. In the example, the
+specification corresponds to $\Prob\{\delta > 0 \,|\,
+\text{data}\}\geq0.8$ and $\Prob\{\delta > 7 \,|\,
+\text{data}\}\geq0.5$. The success criteria are the same for all
+analyses.
+
+Similarly, the argument \code{criteria.futility} specifies the
+futility criteria. In the example, there is only one futility criterion
+corresponding to $\Prob\{\delta < 2 \,|\, \text{data}\}\geq0.8$. The
+futility criterion is the same for all analyses.
+
+If success and/or futility criteria change with stages, the
+corresponding arguments must be matrices that have the same number of rows
+as there are stages in the design.
+
+The argument \code{prior.difference} specifies the prior distribution
+and must be a vector of length 3. The first element gives the prior
+treatment effect. The second and third elements indicate the number
+of hypothetical patients in the control ($n_{10}$) and treatment ($n_{20}$)
+arms, respectively. The default is no prior information corresponding
+to $n_{10}=n_{20}=0$, i.e., zero precision and is specified as
+\code{"non-informative"}.
+
+The prior in the example can be interpreted as if $n_{10}=5$ patients
+in the control and $n_{20}=2$ patients in the treatment arm were added to the new trial, with an observed treatment difference of 3.
+
+The object \code{design1} is of class `\code{gsbDesign}' and contains
+the following information.
+
+<<printDes1,echo=TRUE,eval=TRUE,results=verbatim>>=
+names(design1)
+@
+
+
+\subsubsection{Prior information on both arms}
+The following code shows how to specify such a design with \code{nr.stages}$=4$
+analyses (interim plus final) when prior information is available for
+the treatment response in both arms.
+
+In this case, the arguments \code{prior.control} and \code{prior.treatment} must be
+specified. Both arguments are vectors of length 2, where the first element is
+the arm specific effect and the second element is the number of hypothetical
+patients in each arm.
+
+The other design specifications are identical to the previous
+design.
+
+<<des2,echo=TRUE,eval=TRUE,results=verbatim>>=
+design2 <- gsbDesign(nr.stages = 4, patients = c(10, 20), sigma = c(7, 7),
+  criteria.success = c(0, 0.8, 7, 0.5), criteria.futility = c(2, 0.8),
+  prior.control = c(3, 5), prior.treatment = c(6, 2))
+@
+
+\subsection{Specifying methods for the computation of operating characteristics}
+The methods for computing the operating characteristics depend on the
+availability of prior information. If prior information is available
+on the treatment effect, the numerical integration approach described
+in Section~\ref{trtdiff} is used by default. If prior information is
+available on both, the control and the treatment arm, the simulation approach described in
+Section~\ref{botharms} is used.
+
+\subsubsection{Prior information on treatment effect}
+For the \code{design1} defined above with prior information on the treatment effect, we can choose between the numerical integration 
+and the simulation method to derive the operating characteristics. 
+The numerical integration method, as well as an appropriate set of true treatment effects, are specified with the following command.
+
+<<sim1,echo=TRUE,eval=TRUE,results=verbatim>>=
+simulation1 <- gsbSimulation(truth = c(-10, 20, 60), 
+  type.update = "treatment effect", method = "numerical integration")
+@
+
+The argument \code{truth} is a vector of length 3. The first two
+elements of this vector define the range of true treatment effects
+($\delta_0$) over which the operating characteristics are to be
+evaluated. The third element of the vector specifies the number of distinct values
+to consider.
+
+The argument \code{type.update} indicates that the posterior updating
+is performed on the treatment effect.
+
+The argument \code{method} indicates that numerical integration is
+used.
+
+Alternatively, the operating characteristics can be computed based on
+the simulation approach described in Section~\ref{trtdiff}. In this case,
+the function \code{gsbSimulation} takes a few additional arguments.
+
+<<sim1a,echo=TRUE,eval=TRUE,results=verbatim>>=
+simulation1a <- gsbSimulation(truth = c(-10, 20, 60), 
+  type.update = "treatment effect", method = "simulation", 
+  nr.sim = 50000, warnings.sensitivity = 100, seed = "generate")
+@
+
+The argument \code{nr.sim} indicates the number of simulated trials to
+run.
+
+With the simulation approach, the operating characteristics are
+computed as the number of successful/futile trials at a given stage
+divided by the number of trials not stopped yet. Hence, if \code{nr.sim} is
+not large enough, this leads to unstable results. Therefore, the
+argument \code{warnings.sensitivity} forces \proglang{R} to print a
+warning when the number of trials not stopped prior to a given stage
+is less than 100 in this example.
+
+The argument \code{seed} ensures reproducibility. In the example, the
+argument specifies that the random seed is
+automatically generated.
+
+To compare the results of numerical integration and simulation, the argument \code{method} can be set to
+\code{"both"}, in which case the subsequent call to \code{gsb} will
+generate results for both methods.
+
+\subsubsection{Prior information on both arms}
+For the \code{design2} defined above, an appropriate specification of the
+methods is achieved with the following command.
+
+<<sim2,echo=TRUE,eval=TRUE,results=verbatim>>=
+simulation2 <- gsbSimulation(truth = list(seq(-5, 5, 3), seq(0, 5, 3)),
+  type.update = "per arm", method = "simulation", grid.type = "table",
+  nr.sim = 10000, warnings.sensitivity = 500, seed = "generate")
+@
+
+Depending on the value of the argument \code{grid.type}, the argument
+\code{truth} has to be specified differently. If
+\code{grid.type = "table"} as in the example above, the argument \code{truth} must be a list
+with two elements, the first containing the true responses for the control arm 
+($\mu_{10}$) and the second containing the true responses for the 
+treatment arm ($\mu_{20}$). Alternatively, if \code{grid.type = "manually"},
+the argument \code{truth} must be a matrix with two columns and as
+many rows as true values. If \code{grid.type = "plot"}, the argument
+\code{truth} must be a vector of length 5. The first two elements give
+the range of true values for the control arm and the second two elements
+give the range of true values for the treatment arm. The fifth
+element indicates the number of grid points that are used to produce the graphic.
+
+The argument \code{type.update} indicates that the posterior updating
+is performed per arm.
+
+The argument \code{method} indicates that simulation is used to
+compute the operating characteristics.
+
+
+\subsection{Computing operating characteristics}
+\subsubsection{Prior on treatment effect}
+The following command is used to compute the operating characteristics for \code{design1} via
+numerical integration.
+
+<<gsb1,echo=TRUE,eval=TRUE,results=verbatim>>=
+oc1 <- gsb(design1, simulation1)
+@
+
+The object \code{oc1} is of class `\code{gsbMainOut}' and contains the
+following elements.
+
+<<gsb1desc,echo=TRUE,eval=TRUE,results=verbatim>>=
+names(oc1)
+@
+
+<<gsb1summm,echo=FALSE,eval=TRUE,results=hide>>=
+summ.oc1 <- summary(oc1, atDelta = c(0, 2, 7))
+@
+
+The element \code{OC} contains the operating characteristics, i.e., 
+probabilities of stopping for success and/or futility,
+and expected sample size. The other elements contain the
+decision boundaries on the $D$-scale, design, computational methods,
+and computing time.
+
+The \code{summary}-method produces a concise summary of the operating
+characteristics.
+<<gsb1summ,echo=TRUE,eval=TRUE,results=verbatim>>=
+summary(oc1, atDelta = c(0, 2, 7))
+@
+
+The argument \code{atDelta} allows the specification of values for
+$\delta_0$, at which the operating characteristics are summarized.
+If the operating characteristics are not evaluated at the specified values,
+they are approximated by a linear interpolation of the nearest evaluated characteristics. 
+
+The first part of the summary output above summarizes the design. The columns \code{N1} and
+\code{N2} give the sample sizes of the prior and each stage, respectively. Columns
+\code{S} and \code{F} give success and futility boundaries for the
+observed treatment effect, respectively. Similarly, \code{std.S} and \code{std.F} give
+the standardized boundaries. If and only if the observed treatment effect is
+within \code{F} and \code{S} (or equivalently, the standardized treatment effect is within \code{std.S} and \code{std.F}), 
+is the trial continued.
+
+For example, if the observed treatment effect at the third interim
+analysis is between \Sexpr{round(summ.oc1$design$S[4],2)} 
+% 7.29 
+and \Sexpr{round(summ.oc1$design$F[4],2)}, 
+% 0.565, 
+the trial is continued. The
+corresponding standardized effect must be between 
+\Sexpr{round(summ.oc1$design$std.S[4],2)} 
+% 4.65 
+and \Sexpr{round(summ.oc1$design$std.F[4],2)} 
+% 0.361 
+in order to continue the trial.
+
+The second part summarizes the operating characteristics by providing
+the probabilities of success and futility, as well as the expected sample size, for each interim analysis and
+different true treatment effects (\code{delta}).
+
+In the example above, the total probability of stopping for futility, if there
+is no treatment effect (\code{delta} = 0), is 
+\Sexpr{round(summ.oc1$table.futility[1,"total"],2)*100}\%. 
+% 80\%. 
+If the true treatment
+effect is 7, this probability is \Sexpr{round(summ.oc1$table.futility[3,"total"]*100,2)}\%. 
+%0.25\%. 
+Similarly, the total
+probability of stopping for success if there is no treatment effect is
+\Sexpr{round(summ.oc1$table.success[1,"total"]*100,2)}\% 
+% 0.2\% 
+and if the true treatment effect is 7 this probability is 
+\Sexpr{round(summ.oc1$table.success[3,"total"]*100,1)}\%. 
+% 63.7\%. 
+The expected sample size is between \Sexpr{ceiling(min(summ.oc1$table.success[,7]))} and
+\Sexpr{ceiling(max(summ.oc1$table.success[,7]))}.
+
+
+
+The \code{plot} method allows one to display the operating
+characteristics graphically. The fol-lowing code produces Figure~\ref{fig1}, which shows the cumulative
+probabilities of success, futility, and an indeterminate decision. 
+An indeterminate decision means that further information is needed to decide in favor of success or futility. 
+<<gsb1fig1prep,echo=TRUE,eval=FALSE>>=
+plot(oc1, what = "cumulative all")
+@
+
+
+\begin{figure}[ht!]
+ \begin{center}
+<<gsb1fig1,echo=FALSE,eval=TRUE,fig=TRUE,results=tex,width=10,height=5>>=
+p1 <- plot(oc1, what = "cumulative all")
+print(p1)
+@
+\caption{The operating characteristics are shown as cumulative probabilities 
+ of success, futility, and an indeterminate decision. \label{fig1}}
+\end{center}
+\end{figure}
+
+The argument \code{what} in the plot function in the previous code chunk
+can take the following values: 
+<<gsb1fig1values,echo=FALSE,eval=FALSE,results=hide>>=
+## tricks Sweave because of ugly formatting
+formals(gsbDesign:::plot.gsbMainOut)$what
+@
+\begin{Schunk}
+\begin{Soutput}
+R> c("all", "cumulative all", "both", "cumulative both", "sample size", 
++    "success", "futility", "success or futility", "indeterminate", 
++    "cumulative success", "cumulative futility", 
++    "cumulative success or futility", "cumulative indeterminate", 
++    "boundary", "std.boundary", "delta.grid", "patients")
+\end{Soutput}
+\end{Schunk}
+The following code produces
+the expected sample size and the decision boundaries that are 
+depicted in Figure~\ref{fig2}.
+<<gsb1fig2prep,echo=TRUE,eval=FALSE>>=
+plot(oc1, what = "sample size")
+plot(oc1, what = "boundary")
+@
+
+\begin{figure}[ht!]
+ \begin{center}
+<<gsb1fig2,echo=FALSE,eval=TRUE,fig=TRUE,results=tex,width=10,height=5>>=
+p2 <- plot(oc1, what = "sample size")
+p3 <- plot(oc1, what = "boundary")
+print(p2, position = c(0,0, 0.5, 1), more = TRUE)
+print(p3, position = c(0.5, 0,1, 1), more = FALSE)
+@
+\caption{Illustration of the expected sample size (left panel) and
+ the decision boundaries (right panel).}
+\label{fig2}
+\end{center}
+\end{figure}
+
+The function \code{tab} allows the extraction of operating characteristics
+from the \code{gsbMainOut} object in spreadsheet form.
+
+<<gsb1tab1,echo=TRUE,eval=TRUE,results=verbatim>>=
+tab(oc1, what = "cumulative success", atDelta = c(0, 2, 7), digits = 4, 
+  export = FALSE)
+@
+
+The listing above shows the cumulative success probabilities at each
+interim analysis for true treatment effects of 0, 2, and 7. For example,
+for a true treatment effect of 7, the cumulative probability of success at 
+interim analysis 4 is 
+\Sexpr{tab(oc1, what = "cumulative success", atDelta = c(0, 2, 7), digits = 4, export = FALSE)[3,5]*100}\%.
+
+The argument \code{what} of the \code{tab} function can take the following values:
+\begin{Schunk}
+\begin{Soutput}
+R> c("all", "cumulative all", "success", "futility", "indeterminate", 
++    "success or futility", "cumulative success", "cumulative futility", 
++    "cumulative indeterminate", "cumulative success or futility", 
++    "sample size")
+\end{Soutput}
+\end{Schunk}
+With the argument \code{atDelta}, we can specify at which values of the
+true treatment effect the operating characteristics are reported. 
+If the selected values are not
+part of the values specified for the computation, we interpolate linearly.
+
+The argument \code{export} allows one to export the tables into a
+CSV file.
+\subsubsection{Prior on both treatment arms}
+For our second example, the code for computing the operating
+characteristics is the same.
+<<gsb2,echo=TRUE,eval=TRUE,results=hide>>=
+oc2 <- gsb(design2, simulation2)
+@
+The same utilities as presented above can be used to summarize and display the operating
+characteristics in this situation. However, the complete output is somewhat long and not presented here.
+
+To extract the expected sample size, we can use the
+following command.
+<<gsb2tab1,echo=TRUE,eval=TRUE,results=verbatim>>=
+tab(oc2, what = "sample size", digits = 0)
+@
+In this table, each row corresponds to one combination of true responses 
+ in the control and treatment arms.
+For example, the expected sample sizes for a true effect difference of \code{delta} $= 2$ 
+is calculated for two combinations of true control and treatment arm values, see rows 2 and 7
+in the table above. 
+The corresponding expected numbers of patients in stage 4 are 
+\Sexpr{ceiling(tab(oc2, what = "sample size")[2,7])} and 
+\Sexpr{ceiling(tab(oc2, what = "sample size")[7,7])}.
+
+It is also possible to create graphical output in this
+situation. Because the operating characteristics depend now on
+both the true response in the treatment and the
+control arms, they are presented as contour plots. Figure~\ref{fig3}
+shows the cumulative probabilities of success or futility.
+
+\begin{figure}[ht!]
+ \begin{center}
+<<gsb2fig1,echo=FALSE,eval=TRUE,fig=TRUE,results=hide,width=10,height=9>>=
+simulation2a <- gsbSimulation(truth = c(-5, 5, 0, 5, 50), 
+  type.update = "per arm", method = "simulation", grid.type = "plot",
+  nr.sim = 100000, warnings.sensitivity = 50, seed = "generate")
+oc2a <- gsb(design2, simulation2a)
+p12 <- plot(oc2a, what = "cumulative all", delta.grid = FALSE)
+print(p12)
+@
+\caption{Contour plots of the operating characteristics when prior information is specified per arm. 
+ The cumulative probabilities of success or futility are shown. \label{fig3}}
+\end{center}
+\end{figure}
+
+Further graphics and summaries can be produced when working directly on the data
+frame \code{oc2$OC}.
+
+
+<<preliminaries,echo=FALSE,results=hide>>=
+remove(list=ls())
+set.seed(155)
+@
+
+% ----------------------------------------------------------------------
+\section{Case Study: Design of a PoC trial in Crohn's disease}\label{cast}
+
+Crohn's disease is an inflammatory bowel disease with diverse
+symptoms, mainly in the gastrointestinal tract. We consider the case
+where a new test treatment is believed to be poten-tially beneficial to
+patients with Crohn's disease; for more details see \citet{Gsponer2012PS}. To
+investigate this, an initial small clinical trial with patients is planned.
+Such clinical trials are often called proof-of-concept (PoC) trials or
+pilot studies. If the PoC trial is successful, it is followed by
+larger clinical trials to explore more fully the efficacy and safety
+of the test treatment. The PoC study should be designed in such a way that, at its
+end, a decision on whether to continue or abandon further exploration
+of the test treatment can be made.
+
+In the Crohn's disease case study, a parallel-group, double-blind,
+randomized clinical trial was planned. In such a design, patients are
+randomly allocated to two groups: one group receiving control
+treatment, and the other receiving the test treatment. Neither the
+patients nor their doctors know which of the two treatments they
+receive. After six weeks of treatment, the change in the disease
+activity from baseline (i.e., start of treatment) would be
+evaluated. To measure disease activity, the Crohn's disease activity
+index (CDAI) can be used; the CDAI is a score for which low values
+correspond to low activity. As the efficacy measure, the negative of
+the change from baseline to week six in the CDAI score is used, such
+that large values of this measure correspond to an improvement. The
+efficacy measure is approximately normally distributed with a standard
+deviation of about $\sigma=88$, based on information from past studies
+with Crohn's disease patients. If $n_1$ patients have been allocated
+to the control, and $n_2$ patients to the test treatment, then the average
+efficacy measure in the two treatment groups is $\bar{Y}_1 \sim
+N(\mu_1, \sigma^2/n_1)$ and $\bar{Y}_2 \sim N(\mu_2, \sigma^2/n_2)$,
+respectively. The true treatment effect is then $\delta = \mu_2 -
+\mu_1$.
+
+At this stage of the planning, one can quantify when a PoC trial can
+be considered a success. The PoC trial should first provide clear
+evidence that the test treatment is better than the control, and then
+give some indication that the test treatment is at least similarly
+effective as available treatments for Crohn's disease.
+
+Available treatments for Crohn's disease have shown a difference to
+placebo in the efficacy measure of about 50 units. Hence, the results
+from the PoC trial would be considered positive by the clinician if
+the observed treatment effect is 50 units or more, and the treatment
+is very likely to be better than the placebo. To be competitive, the test
+treatment would actually have to be better by considerably more than 50 units.
+
+In the following, we consider how the design of such a PoC trial may be developed, starting
+from a simple design with no interim analysis and no prior information, moving then to a
+design with one interim analysis (and no prior information), and finally also including prior
+information.
+
+
+\subsubsection{Simple design with no prior information and no interim analysis}
+The trial statistician, asked to come up quickly with a sample size
+for the PoC trial, may be tempted to formulate the requirements by the
+clinician as a conventional testing problem. For example, a one-sided
+test $H_0: \delta\leq0$ vs. $H_1: \delta>0$ with type I error of
+$5\%$. Then, to get a sample size, he might interpret the treatment
+difference of 50 units as the alternative and require a power of 80\% at 
+this alternative. For a design with no interim analysis, approximately
+40 patients per treatment arm would be needed. In \pkg{gsbDesign}
+this design is specified with the following code.
+
+<<desPoC1,echo=TRUE,eval=TRUE,results=verbatim>>=
+desPoC1 <- gsbDesign(nr.stages = 1, patients = c(40, 40), 
+  sigma = c(88, 88), criteria.success = c(0, 0.95), 
+  criteria.futility = c(NA, NA))
+simPoC1 <- gsbSimulation(truth = c(-50, 100, 60),
+  type.update = "treatment effect", method = "numerical integration")
+ocPoC1 <- gsb(desPoC1, simPoC1)
+summary(ocPoC1, atDelta = c(0, 50))
+@
+
+However, with this design, the result will be statistically significant
+when we observe a treatment effect of 32.4 units, which is much
+smaller than the 50 units observed in other studies. A PoC study with
+a treatment effect of only 32.4 units, although statistically
+significantly better than the placebo at a one-sided significance level of
+5\%, would not be considered a success by clinicians, and the
+decision would probably be to discontinue further development. Hence,
+there is a need to formulate success criteria that better match the
+actual decision-making on whether to stop or continue further
+development.
+
+Formally, these two success criteria can be expressed as:
+\begin{align*}
+\text{(S1)}&\quad\Prob\{\, \delta > 0 \, \mid \,\text{data } \} \geq 0.95,\\
+\text{(S2)}&\quad\Prob\{\, \delta > 50\, \mid \,\text{data } \} \geq 0.50.
+\end{align*}
+Here, $s_1=0$ and $s_2=50$, are the effect thresholds for the two success
+criteria, and the corresponding probability thresholds are $p_1=0.95$ and
+$p_2=0.50$.
+
+Translated to a frequentist framework \citep{Kieser2005PS},
+these two criteria correspond approximately to the requirement that
+the test treatment is statistically significantly better than the placebo,
+and that the observed treatment difference is at least 50 units (when
+non-informative priors are used).
+
+A futility criterion may also be specified to indicate when the test
+treatment is clearly inadequate. In this case, the futility criterion
+is expressed as:
+\begin{align*}
+\text{(F1)}&\quad\Prob\{\, \delta < 40 \, \mid \, \text{data } \} \geq 0.90 .
+\end{align*}
+Here, $f_1=40$ and $q_1=0.9$ are the effect threshold and the probability
+threshold for the futility criterion. Again, these should reflect
+medical decision-making.
+
+With these changed success and futility criteria, the trial
+statistician may reconsider the choice of an appropriate sample
+size. For example, he may choose the sample size such that the success
+criteria (S1) and (S2) are equivalent. Translating this to a
+frequentist framework, we may like to choose the sample size such that
+if the test treatment is statistically significantly better than the
+placebo, then the observed treatment difference is at least 50 units,
+and vice versa. Technically, this is achieved when the power is 50\%
+at the observed difference of 50 units. Hence, a sample size of about
+20 patients per group may be appropriate. It should be noted that the
+difference of 50 units is not the alternative hypothesis; see
+\citet{Neuenschwander2011SiM} for a related discussion.
+
+Using \pkg{gsbDesign}, the operating characteristics of the design with
+these success and futility criteria can now be evaluated.
+
+<<desPoC2,echo=TRUE,eval=TRUE,results=verbatim>>=
+desPoC2 <- gsbDesign(nr.stages = 1, patients = c(20, 20), 
+  sigma = c(88, 88), criteria.success = c(0, 0.975, 50, 0.5), 
+  criteria.futility = c(40, 0.9))
+simPoC2 <- gsbSimulation(truth = c(0, 70, 60),
+  type.update = "treatment effect", method = "numerical integration")
+ocPoC2 <- gsb(desPoC2, simPoC2)
+summary(ocPoC2, atDelta = c(0, 40, 50, 60))
+@
+
+The clinical team may think that the probability of success when the
+true treatment difference is 60 (a promising test treatment) is
+somewhat too low. Rather than now change the success criteria, the
+better option seems to be to expand the trial design to a two-stage design.
+
+
+\subsubsection{Design with no prior information and one interim analysis}
+Now consider a group sequential design with no prior information and
+one interim analysis. In both stages, we assign 20 patients to each
+treatment arm.
+
+<<desPoC4,echo=TRUE,eval=TRUE,results=verbatim>>=
+desPoC4 <- gsbDesign(nr.stages = 2, patients = c(20, 20), 
+  sigma = c(88, 88), criteria.success = c(0, 0.975, 50, 0.5), 
+  criteria.futility = c(40, 0.9))
+simPoC4 <- gsbSimulation(truth = c(0, 70, 60),
+  type.update = "treatment effect", method = "numerical integration")
+ocPoC4 <- gsb(desPoC4, simPoC4)
+summary(ocPoC4, atDelta = c(0, 40, 50, 60, 70))
+@
+
+<<valuesDesPoC4,echo=FALSE,eval=TRUE,results=hide>>=
+SPoC4 <- summary(ocPoC4, atDelta = c(0, 40, 50, 60, 70))
+@ 
+
+With this design, if the treatment is placebo-like, there is a 
+\Sexpr{round(SPoC4$table.success$total[1]*100,1)}\% %2.8\%
+probability of declaring the PoC successful and an 
+\Sexpr{round(SPoC4$table.futility$total[1]*100,1)}\% %80.7\% 
+probability
+of declaring it futile. If the true treatment effect is $\delta=60$,
+the success and futility probabilities are 
+\Sexpr{round(SPoC4$table.success$total[4]*100,1)}\% %76.1\% 
+and \Sexpr{round(SPoC4$table.futility$total[4]*100,1)}\% %2.9\%,
+respectively. The expected sample size varies between 
+\Sexpr{ceiling(min(SPoC4$table.success[[5]]))} %51 
+and \Sexpr{ceiling(max(SPoC4$table.success[[5]]))} %64
+patients.
+
+\subsubsection{Design with prior information for placebo and one interim analysis}
+An informative prior for the true treatment effect ($\eta_{10}$) in the
+placebo group was derived from six historical trials in patients with
+Crohn's disease, using a meta-analytic-predictive approach
+\citep{Neuenschwander2010CT}. More precisely, $\mu_1 \sim N(49, \sigma^2/20)$ was
+used as prior information; for details, see \citet{Gsponer2012PS}. Thus, prior information on the placebo is worth 20 patients.
+
+<<desPoC5,echo=TRUE,eval=TRUE,results=verbatim>>=
+desPoC5 <- gsbDesign(nr.stages = 2, patients = c(10, 20), 
+  sigma = c(88, 88), criteria.success = c(0, 0.975, 50, 0.5), 
+  criteria.futility = c(40, 0.9), prior.control = c(49, 20))
+simPoC5 <- gsbSimulation(truth = cbind(rep(c(30, 50, 70), each = 5),
+  c(30, 70, 80, 90, 100, 50, 90, 100, 110, 120, 70, 110, 120, 130, 140)),
+  nr.sim = 20000, type.update = "per arm", method = "simulation", 
+  grid.type = "manually")
+ocPoC5 <- gsb(desPoC5, simPoC5)
+@
+
+<<maketabPoC5,echo=FALSE,eval=TRUE,results=hide>>=
+tS1 <- subset(ocPoC5$OC,type=="cumulative success" & delta.control==50 & stage=="stage 1")[,c("delta","value")]
+tS2 <- subset(ocPoC5$OC,type=="cumulative success" & delta.control==50 & stage=="stage 2")[,"value"]
+tF1 <- subset(ocPoC5$OC,type=="cumulative futility" & delta.control==50 & stage=="stage 1")[,"value"]
+tF2 <- subset(ocPoC5$OC,type=="cumulative futility" & delta.control==50 & stage=="stage 2")[,"value"]
+tN <- ceiling(subset(ocPoC5$OC,type=="sample size" & delta.control==50 & stage=="stage 2")[,"value"])
+tSum <- cbind(tS1,tF1,tS2,tF2,tN)
+colnames(tSum) <- c("$\\delta$","Interim\nsuccess","Interim\nfutility","Final\nsuccess","Final\nfutility","Expected N")
+@ 
+
+The resulting operating characteristics of this simulation are summarized in Table~\ref{tab1}.
+If the test treatment is placebo-like, then the PoC will be
+declared to be successful in only \Sexpr{round(tS2[1],3)*100}\%
+of the cases, i.e., the type I error is low. 
+If the experimental treatment is borderline effective
+($\delta=50$) or similar to competitors ($\delta=60$), then a successful PoC
+is expected in \Sexpr{round(tS2[3],2)*100}\% and \Sexpr{round(tS2[4],3)*100}\% 
+of cases, respectively. 
+The expected sample
+size is typically between \Sexpr{min(tN)} and \Sexpr{max(tN)}, depending on the true effect
+size.
+<<tabPoC5,echo=FALSE,eval=TRUE,results=tex>>=
+print(xtable(tSum,caption="Operating characteristics of the two stage design.",
+ label = "tab1", align=rep("c",7),digits=c(0,0,3,3,3,3,0)),
+     stype="latex",sanitize.colnames.function=function(x){x},
+     include.rownames=FALSE)
+@
+
+
+
+\section{Conclusion}
+In this paper, we have presented the \proglang{R}~package
+\pkg{gsbDesign}. The package provides utilities to study operating
+characteristics of group sequential Bayesian designs. When prior
+information is available on the treatment effect, the package uses the
+efficient numerical integration methods from \citet{Jennison2000}
+that are implemented in the \proglang{R}~package \pkg{gsDesign}. If
+the amount of information is not the same for the treatment
+and control groups, \pkg{gsbDesign} uses simulation to compute the
+operating characteristics.
+
+
+\section*{Acknowledgments}
+We would like to thank Bj\"orn Bornkamp, David Ohlssen, and Heinz Schmidli for their helpful and 
+constructive comments and suggestions on the draft versions of the manuscript. 
+We would also like to thank the two reviewers for their thoughtful comments that helped to improve the manuscript.
+We acknowledge support from the Swiss National Science Foundation (\mbox{SNSF-144973}).
+
+\bibliography{JSS-gsbDesign}
+\end{document}

@@ -1,5 +1,6 @@
 \name{gsb-package}
 \alias{gsb-package}
+\alias{gsbDesign-package}
 \docType{package}
 \title{Group Sequential Bayesian Design}
 \description{
@@ -23,35 +24,32 @@ The main function of the package is \code{gsb()}. More detailed information can 
   \tabular{ll}{
     Package: \tab gsbDesign\cr
     Type: \tab Package\cr
-    Version: \tab 0.96-2\cr
-    Date: \tab 2013-04-21\cr
+    Version: \tab 1.00\cr
+    Date: \tab 2016-03-27\cr
     License: \tab GNU General Public License >=3\cr
     LazyLoad: \tab yes\cr
   }
 }
-\author{
-Florian Gerber, Thomas Gsponer
 
-Maintainer: <flora.fauna.gerber at gmail.com>
+\author{
+Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 \references{
   \itemize{
-    \item Gerber F, Gsponer T (2015). 
-    An R Package for evaluating operating characteristics for a group
-    sequential Bayesian design.
-    Journal of Statistical Software, accepted.
-    \item Gsponer T, Gerber F, Bornkamp B, Ohlssen D, Vandemeulebroecke
-    M, Schmidli H (2014).
-    A practical guide to Bayesian group sequential designs.
+    \item Gerber F, Gsponer T (2016). 
+    gsbDesign: An R Package for Evaluating the Operating Characteristics of a Group Sequential Bayesian Design.
+    Journal of Statistical Software, 69(11), 1-23, DOI: 10.18637/jss.v069.i11
+    \item Gsponer T, Gerber F, Bornkamp B, Ohlssen D, Vandemeulebroecke M, Schmidli H (2014).
+    A Practical Guide to Bayesian Group Sequential Designs.
     Pharmaceutical Statistics, 13(1) 71-80, DOI: 10.1002/pst.1593
     \item Berry SM, Carlin BP, Lee JJ, and Mueller P
-    (2010). Bayesian Adaptive Methods for Clinical
-    Trials. Chapman&Hall/CRC, London.
+    (2010). Bayesian Adaptive Methods for Clinical Trials.
+    Chapman&Hall/CRC, London.
     \item Jennison C, and Turnbull BW (2000). Group Sequential Methods
     with Applications to Clinical Trials. Chapman&Hall/CRC, London.
     \item Spiegelhalter DJ, Abrams KR, and Myles, J. P. (2004). Bayesian
     Approaches to Clinical Trials and Health Care Evaluation. Wiley, New
-    York.  
+    York.
   }
 }
 

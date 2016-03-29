@@ -34,7 +34,7 @@ gsbBayesUpdate(alpha, beta, meanData, precisionData, with.alpha = TRUE)
   \item{weight}{weights of the priors relative to the whole information after updating.}
 }
 \author{
-Florian Gerber, Thomas Gsponer
+Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 \note{
 This function is used in the function \code{gsb()}. 
