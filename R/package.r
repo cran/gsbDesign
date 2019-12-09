@@ -20,7 +20,7 @@ myround <- function(x, what=what, digits=digits){
 
 
 integer2numeric <- function(x){
-  if(class(x)=="integer")
+  if(inherits(x, "integer"))
     return(as.numeric(x))
   x
 }
@@ -1492,15 +1492,15 @@ gsbDesign <- function(nr.stages=NULL,
   if(length(criteria.futility)==1 & is.na(criteria.futility[1]))
     criteria.futility <- rep(NA,2)
 
-  if(!(class(criteria.futility)=="numeric" | class(criteria.futility)=="matrix") & !is.na(criteria.futility[1])) 
+  if(!(inherits(criteria.futility, "numeric") | inherits(criteria.futility, "matrix")) & !is.na(criteria.futility[1])) 
     stop("The argument \"criteria.futility\" has to be of class \"numeric\" or \"matrix\".")
 
-  if(!(class(criteria.success)=="numeric" | class(criteria.success)=="matrix") & !is.na(criteria.success[1])) 
+  if(!(inherits(criteria.success, "numeric") | inherits(criteria.success, "matrix")) & !is.na(criteria.success[1])) 
     stop("The argument \"criteria.success\" has to be of class \"numeric\" or \"matrix\".")
 
   
   ## check maximal nr of criteria
-  if(class(criteria.success)=="numeric"){
+  if(inherits(criteria.success, "numeric")){
     if(length(criteria.success)%%2) ## check if length is odd.
       stop(" Argument \"criteria.success\" has to contain pairs, i.e. length(criteria.success) %% 2 has to be 0.")
     if(sum(criteria.success[ (1:(length(criteria.success)/2)) *2]>1, na.rm=TRUE)!=0 |sum(criteria.success[ (1:(length(criteria.success)/2))*2]<0, na.rm=TRUE)!=0)
@@ -1508,7 +1508,7 @@ gsbDesign <- function(nr.stages=NULL,
     
     names(criteria.success) <- rep(c("value","probability"), length(criteria.success)/2)
   }
-  if(class(criteria.success)=="matrix"){
+  if(inherits(criteria.success, "matrix")){
     if(dim(criteria.success)[2]%%2 ||dim(criteria.success)[1] != nr.stages )
       stop("If \"criteria.success\" is inputed as matrix, the dimension has to be \"c(nr.stages, 'odd number')\"")
     if(sum(criteria.success[ ,(1:(length(criteria.success[1,])/2)) *2]>1, na.rm=TRUE)!=0 |sum(criteria.success[ ,(1:(length(criteria.success[1,])/2))*2]<0, na.rm=TRUE)!=0)
@@ -1516,7 +1516,7 @@ gsbDesign <- function(nr.stages=NULL,
     dimnames(criteria.success)[[2]] <- rep(c("value","probability"), dim(criteria.success)[2]/2)
     dimnames(criteria.success)[[1]] <- paste("stage", 1:nr.stages)
   }
-  if(class(criteria.futility)=="numeric"){
+  if(inherits(criteria.futility, "numeric")){
     if(length(criteria.futility)%%2) ## check if length is odd.
       stop("\"criteria.futility\" has to contain pairs, i.e. length(criteria.futility) %% 2 has to be 0. \n\n")
     if(sum(criteria.futility[ (1:(length(criteria.futility)/2)) *2]>1, na.rm=TRUE)!=0 |sum(criteria.futility[ (1:(length(criteria.futility)/2))*2]<0, na.rm=TRUE)!=0)
@@ -1524,7 +1524,7 @@ gsbDesign <- function(nr.stages=NULL,
 
     names(criteria.futility) <- rep(c("value","probability"), length(criteria.futility)/2)
   }
-  if(class(criteria.futility)=="matrix"){
+  if(inherits(criteria.futility, "matrix")){
     if(dim(criteria.futility)[2]%%2 ||dim(criteria.futility)[1] != nr.stages )
       stop("If \"criteria.futility\" is inputed as matrix, the dimension has to be \"c(nr.stages, 'odd number')\" \n\n")
     if(sum(criteria.futility[ ,(1:(length(criteria.futility[1,])/2)) *2]>1, na.rm=TRUE)!=0 |sum(criteria.futility[, (1:(length(criteria.futility[1,])/2))*2]<0, na.rm=TRUE)!=0)
