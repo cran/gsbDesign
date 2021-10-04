@@ -3,11 +3,10 @@
 ###################################################
 ### code chunk number 1: preliminaries
 ###################################################
-remove(list=ls())
 set.seed(144)
-options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
-if(!file.exists("./Figures/"))
-    dir.create("./Figures/",recursive=TRUE)
+old <- options(prompt = "R> ", continue = "+  ", width = 70, useFancyQuotes = FALSE)
+##if(!file.exists("./Figures/"))
+##    dir.create("./Figures/",recursive=TRUE)
 
 
 ###################################################
@@ -154,7 +153,6 @@ print(p12)
 ###################################################
 ### code chunk number 22: preliminaries
 ###################################################
-remove(list=ls())
 set.seed(155)
 
 
@@ -232,5 +230,6 @@ print(xtable(tSum,caption="Operating characteristics of the two stage design.",
  label = "tab1", align=rep("c",7),digits=c(0,0,3,3,3,3,0)),
      stype="latex",sanitize.colnames.function=function(x){x},
      include.rownames=FALSE)
+options(old)
 
 

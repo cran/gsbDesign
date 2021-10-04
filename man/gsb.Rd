@@ -396,7 +396,7 @@ plot(x2b, what="std.boundary")
 
 
 
-\dontrun{
+\donttest{
 ## E X A M P L E 3: Update on treatment effect, informative prior
 ##
 ## A. Trial Design

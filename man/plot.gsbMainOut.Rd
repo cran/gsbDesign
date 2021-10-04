@@ -24,7 +24,7 @@ Methods for plotting the results of \code{gsb()}.}
      smooth = 100,
      contour = TRUE, 
      export = FALSE,
-     path = getwd(),
+     path = tempdir(),
      sliced = FALSE,
      range.control="default", ...)
 
@@ -81,7 +81,7 @@ Methods for plotting the results of \code{gsb()}.}
   }
   \item{path}{
     \code{character}. to specify the location to which to table should
-    be exported. the default 'getwd()' exports the table to the working
+    be exported. the default 'tempdir()' exports the table to a temporary
     directory.
   }
   \item{sliced}{
@@ -95,7 +95,9 @@ Methods for plotting the results of \code{gsb()}.}
   }
   \item{...}{further arguments passed to or from other methods.}
 }
-
+\value{
+  Returns an object of class \code{"trellis"}
+}
 \references{
 uses the R-package 'lattice'. 
 }
@@ -116,7 +118,7 @@ Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 ## --------------------------------------
 ## alternative plots can be created for example
 ## with package 'ggplot2'.
-\dontrun{
+\donttest{
 des <- gsbDesign(nr.stages=2,
                      patients=10,
                      sigma=10,
@@ -135,7 +137,7 @@ datgraph <- x$OC
 
 
 ## prepare for plot
-sub <- levels(datgraph$type)[1:3]
+sub <- c("success", "futility", "success or futility")
 datgraph2 <- subset(datgraph,datgraph$type \%in\% sub)
 datgraph2$type <- as.factor(paste(datgraph2$type))
 datgraph2$value[datgraph2$type=="cumulative success or futility"] <-

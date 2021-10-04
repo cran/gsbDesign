@@ -24,8 +24,8 @@ The main function of the package is \code{gsb()}. More detailed information can 
   \tabular{ll}{
     Package: \tab gsbDesign\cr
     Type: \tab Package\cr
-    Version: \tab 1.00\cr
-    Date: \tab 2016-03-27\cr
+    Version: \tab 1.0-2\cr
+    Date: \tab 2021-10-02\cr
     License: \tab GNU General Public License >=3\cr
     LazyLoad: \tab yes\cr
   }

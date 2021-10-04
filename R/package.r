@@ -1359,11 +1359,11 @@ gsbDesign <- function(nr.stages=NULL,
   if(is.null(patients))
     stop("Please specify the argument \"patients\".")
 
- 
-  if(class(patients)!="numeric" & class(patients)!="matrix")
+  
+  if(!(inherits(patients, "numeric") | inherits(patients, "matrix")))
     stop("Argument \"patients\" has to be of class \"numeric\" or \"matrix\".\n")
   
-  if(class(patients)=="numeric"){
+  if(inherits(patients, "numeric")){
     
     if(length(patients)>2)
       stop("Argument \"patients\" has to be a vector of length 1 or 2 or a matrix of size \"nr.stages x 2\"  or size \"nr.stages x 1\".")
@@ -1887,7 +1887,7 @@ plot.gsbMainOut <- function(x,
                             smooth=100,
                             contour=TRUE,
                             export=FALSE,
-                            path=getwd(),
+                            path=tempdir(),
                             sliced=FALSE,
                             range.control="default",
                             ...){
@@ -2253,7 +2253,7 @@ tab <- function(x,
                 digits = 3,
                 export = FALSE, 
                 sep = ",",
-                path = getwd()) 
+                path = tempdir()) 
 {
   
   ## control / prepare arguments

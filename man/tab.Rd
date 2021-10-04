@@ -20,7 +20,7 @@ tab(x,
     digits = 3,
     export = FALSE,
     sep = ",",
-    path = getwd())
+    path = tempdir())
 }
 
 \arguments{
@@ -56,10 +56,14 @@ tab(x,
  }
   \item{path}{
     \code{character}. to specify the location to which to table should
-  be exported. the default 'getwd()' exports the table to the working
+  be exported. the default 'tempdir()' exports the table to a temporary
   directory.
   }
   
+}
+\value{
+  Returns a matrix with the results from the output of function
+  \code{gsb()}. 
 }
 
 \author{

@@ -1,6 +1,10 @@
 ---------------------------
 -- ChangeLog - gsbDesign --
 ---------------------------
+2021-10-02 Bjoern Bornkamp (version 1.0-1)
+	* Changes to bring gsbDesign back to CRAN (was archived due
+	temporary archival of package dependency gsDesign)
+
 2019-12-07 Bjoern Bornkamp (version 1.0-1)
 	* Fix errors on CRAN (class(.) == * issue)
 
