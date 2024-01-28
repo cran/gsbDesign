@@ -149,6 +149,7 @@ datgraph2 <- datgraph2[order(datgraph2$delta),]
 
 
 ## plots
+library(ggplot2)
 p1 <- qplot(delta,value,geom="blank",color=type,facets=.~stage,data=datgraph2,
 xlab=expression(delta))
 

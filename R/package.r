@@ -99,7 +99,7 @@ gsbCgrid <- function (Ngrd, bnds){
 #as methods for classes: "OCsimulation", "OCtrial", "OCprior", "OCcriteria" <<<-----------------
 
 as.data.frame.gsbCriteria <- function(x,...){
-    if (class(x)[2]=="array"){
+    if (inherits(x, "array")){
     value <- c(as.vector(x[1,1,,]),as.vector(x[1,2,,]))
     probability <- c(as.vector(x[2,1,,]),as.vector(x[2,2,,]))
     type <-factor(as.vector(t ( array(dim=c(2,dim(x)[3]*dim(x)[4]),data=c("success","futility") ))))
@@ -166,7 +166,7 @@ plot.gsbSimArm.result <- function(x,
       stages <- 1:i
     }
   }
-  if(class(stages)=="numeric"){
+  if(inherits(stages, "numeric")){
     stages <- stages[!duplicated(stages)]
     ## stages <- stages[stages<=i]
     ## stages <- stages[stages>=0]
@@ -297,7 +297,7 @@ plot.gsbSimArm.result <- function(x,
 
 
 plot.gsbSimulation <- function(x,...){
-  if(class(x$truth)[2]!="matrix")
+  if(!inherits(x$truth, "matrix"))
     return()
   x <- x$truth
   class(x) <- "matrix"
@@ -309,7 +309,7 @@ plot.gsbSimulation <- function(x,...){
 
 
 ## plot boundary
-plot.boundary <- function(x, what){
+plot_boundary <- function(x, what){
 
   
   panel <- function(...) {
@@ -1211,10 +1211,10 @@ gsb <- function(design=NULL,
     stop("Please specify the argument \"simulation\". The simulation object can be created with function gsbSimulation.")
 
   ## check class
-  if(class(design)[1]!= "gsbDesign")
+  if(!inherits(design, "gsbDesign"))
     stop("The argument \"design\" has to be of class \"gsbDesign\". The design object can be created with function gsbDesign().")
 
-  if(class(simulation)[1] != "gsbSimulation")
+  if(!inherits(simulation, "gsbSimulation"))
     stop("The argument \"design\" has to be of class \"gsbSimulation\". The simulation object can be created with function gsbSimulation().")
     
   ## check if design is compatible with Simulation
@@ -1234,7 +1234,7 @@ gsb <- function(design=NULL,
   design$trial <- cbind(design$patients[,1],design$sigma[,1],design$patients[,2], design$sigma[,2])
 
  
-  if(class(simulation)[2]=="gsbSimArm"){
+  if(inherits(simulation, "gsbSimArm")){
     
     s <- system.time(r <- gsbSimArm(design = design,
                                     simulation = simulation))
@@ -1248,13 +1248,13 @@ gsb <- function(design=NULL,
     
   }
   
-  if(class(simulation)[2]=="gsbSimDif"){
+  if(inherits(simulation, "gsbSimDif")){
    
     s <- system.time(r <- gsbSimDif(design = design,
                                     simulation = simulation
                                     )
                      )
-    if(class(r$warnings)[2]=="tr")
+    if(inherits(r$warnings, "tr"))
       message(simulation$nr.sim," simlations per (delta.control,delta.treatment) is smaller than the specified threshold = ",simulation$warnings.sensitivity ," for the following delta. Further information in help of \"gsb()\": \n" )
     w <- as.matrix(r$warnings)
     class(w) <- "matrix"
@@ -1341,7 +1341,7 @@ gsbDesign <- function(nr.stages=NULL,
   if(is.null(nr.stages))
     stop("Please specify the argument \"nr.stges\".")
 
-  if(class(nr.stages)!="numeric")
+  if(!inherits(nr.stages, "numeric"))
     stop("Argument \"nr.stages\" has to be of class \"numeric\". \n\n")
   
   if(length(nr.stages)!=1)
@@ -1395,10 +1395,10 @@ gsbDesign <- function(nr.stages=NULL,
     stop("Please specify the argument \"sigma\".")
   
   
-  if(class(sigma)!="numeric" & class(sigma)!="matrix")
+  if(!inherits(sigma, "numeric") & !inherits(sigma, "matrix"))
     stop("Argument \"sigma\" has to be of class \"numeric\" or \"matrix\".\n")
   
-  if(class(sigma)=="numeric"){
+  if(inherits(sigma, "numeric")){
     
     if(length(sigma)>2)
       stop("Argument \"sigma\" has to be a vector of length 1 or 2. It also can be a matrix of size \"nr.stages x 2\" or size \"nr.stages x 1\"")
@@ -1412,7 +1412,7 @@ gsbDesign <- function(nr.stages=NULL,
     names(sigma) <- c("control", "treatment")
   }
   
-  if(class(sigma)=="matrix"){
+  if(inherits(sigma, "matrix")){
     if(dim(sigma)[2]==1)
       sigma <- cbind(sigma,sigma)
     
@@ -1438,7 +1438,7 @@ gsbDesign <- function(nr.stages=NULL,
       if(is.null(prior.difference))
         stop("Please specify the argument \"prior.difference\".")
       
-      if(class(prior.difference) != "numeric")
+      if(!inherits(prior.difference,  "numeric"))
         stop("the argument \"prior.difference\" has to be a \"numeric\" of length 3.")
       
       if(length(prior.difference) != 3)
@@ -1454,7 +1454,7 @@ gsbDesign <- function(nr.stages=NULL,
     
     if(prior.control[1] !="non-informative"){
       
-      if(class(prior.control)!="numeric")
+      if(!inherits(prior.control, "numeric"))
         stop("the argument \"prior.control\" has to a \"numeric\" of length 2.")
       if(length(prior.control)!=2)
         stop("the argument \"prior.control\" has to a \"numeric\" of length 2.")        
@@ -1465,7 +1465,7 @@ gsbDesign <- function(nr.stages=NULL,
     }
     
     if(prior.treatment[1] !="non-informative"){
-      if(class(prior.treatment)!="numeric")
+      if(!inherits(prior.treatment, "numeric"))
         stop("the argument \"prior.treatment\" has to be a \"numeric\" of length 2.")
       if(length(prior.treatment)!=2)
         stop("the argument \"prior.treatment\" has to be a \"numeric\" of length 2.")        
@@ -1534,18 +1534,18 @@ gsbDesign <- function(nr.stages=NULL,
     dimnames(criteria.futility)[[1]] <- paste("stage", 1:nr.stages)
   }
 
-  if(class(criteria.success)[1]=="numeric")
+  if(inherits(criteria.success, "numeric"))
     ns <- length(criteria.success)/2
-  if(class(criteria.success)[1]=="matrix")
+  if(inherits(criteria.success, "matrix"))
     ns <- dim(criteria.success)[2]/2
-  if(class(criteria.success)[1]=="logical")
+  if(inherits(criteria.success, "logical"))
     ns <- 1
 
-  if(class(criteria.futility)[1]=="numeric")
+  if(inherits(criteria.futility, "numeric"))
     nf <- length(criteria.futility)/2 
-  if(class(criteria.futility)[1]=="matrix")
+  if(inherits(criteria.futility, "matrix"))
     nf <- dim(criteria.futility)[2]/2
-  if(class(criteria.futility)[1]=="logical")
+  if(inherits(criteria.futility, "logical"))
     nf <- 1
   
 
@@ -1559,7 +1559,7 @@ gsbDesign <- function(nr.stages=NULL,
   criteria <- array(dim=c(2,2,m,nr.stages), dimnames=list(lab.criteria.1,lab.criteria.2,lab.criteria.3,lab.criteria.4))
   
   ## fill criteria array
-  if(class(criteria.success)[1]!="matrix"){
+  if(!inherits(criteria.success, "matrix")){
     if(ns < m){
       criteria.success <- c(criteria.success,rep(NA,times=2*(m-ns)))
     }
@@ -1569,7 +1569,7 @@ gsbDesign <- function(nr.stages=NULL,
       criteria.success <- cbind(criteria.success, matrix(nrow=nr.stages,ncol=2*(m-ns), data=NA) )
     criteria[,1,,] <- t(criteria.success)
   }
-  if(class(criteria.futility)[1]!="matrix"){
+  if(!inherits(criteria.futility, "matrix")){
     if(nf < m){
       criteria.futility <- c(criteria.futility,rep(NA,times=2*(m-nf)))
     }
@@ -1661,7 +1661,7 @@ gsbSimulation <- function(truth=NULL,
 
   
 
-  if(class(warnings.sensitivity)!="numeric")
+  if(!inherits(warnings.sensitivity, "numeric"))
     stop("\"warnings.sensitivity\" has to be a vector of length 1 containing a positive integer value.")
   if( length(warnings.sensitivity)>1)
     stop("\"warnings.sensitivity\" has to be a vector of length 1 containing a positive integer value.")
@@ -1670,7 +1670,7 @@ gsbSimulation <- function(truth=NULL,
 
 
 
-  if(class(nr.sim)!="numeric" | length(nr.sim)>1)
+  if(!inherits(nr.sim, "numeric") | length(nr.sim)>1)
     stop("\"nr.sim\" has to be a numeric of length 1 containing a positive integer value.")
   if(round(nr.sim,digits=0)!=nr.sim | nr.sim<warnings.sensitivity)
     stop("\"nr.sim\" has to be a numeric of length 1 containing a integer value > \"warnings.sensitivity\".")
@@ -1682,7 +1682,7 @@ gsbSimulation <- function(truth=NULL,
       seed <- round(runif(1,-1000,10000), digits=0)
     }
     if(seed[1] != "generate"){
-      if(length(seed)>1 | class(seed) != "numeric" )
+      if(length(seed)>1 | !inherits(seed, "numeric" ))
         stop("seed has to be a vector with one integer value.")
       seed <- round(seed, digits=1)
     }
@@ -1692,11 +1692,11 @@ gsbSimulation <- function(truth=NULL,
   ## if (method=="calc treatment effect"){
   if (type.update[1]=="treatment effect" && method == "numerical integration"){
     if (grid.type=="manually"){
-      if(class(truth) !="numeric")
+      if(!inherits(truth, "numeric"))
         stop("\"truth\" has to be a numeric if type.update = \"treatment effect\" and grid.type = \"manually\".")
       r <- list(truth=truth,type.update=type.update, method=method, grid.type=grid.type)
     }else{
-      if(class(truth) !="numeric" | length(truth)!=3 | truth[2]<truth[1])
+      if(!inherits(truth, "numeric") | length(truth)!=3 | truth[2]<truth[1])
         stop("\"truth\" has to be a numeric of length 3 specifying a sequence as in seq() if type.update = \"treatment effect\" and grid.type != \"manually\".")
       r <- list(truth=seq(truth[1],truth[2],length.out=truth[3]),type.update=type.update,method=method, grid.type=grid.type, seed=seed)
     }
@@ -1708,12 +1708,12 @@ gsbSimulation <- function(truth=NULL,
   if (type.update=="treatment effect" && method == "simulation"){
     
     if (grid.type=="manually"){
-      if(class(truth) !="numeric")
+      if(!inherits(truth, "numeric"))
         stop("\"truth\" has to be a numeric if type.update = \"treatment effect\" and grid.type = \"manually\".")
     }
     
     if (grid.type!="manually"){
-      if(class(truth) !="numeric" | length(truth)!=3 | truth[2]<truth[1])
+      if(!inherits(truth, "numeric") | length(truth)!=3 | truth[2]<truth[1])
         stop("\"truth\" has to be a numeric of length 3 specifying a sequence as in seq() if type.update = \"treatment effect\" and grid.type != \"manually\".")
       truth <- seq(truth[1],truth[2],length.out=truth[3])
     }
@@ -1733,12 +1733,12 @@ gsbSimulation <- function(truth=NULL,
   if (type.update=="treatment effect" && method == "both"){
 
     if (grid.type=="manually"){
-      if(class(truth) !="numeric")
+      if(!inherits(truth, "numeric"))
       stop("\"truth\" has to be a numeric if type.update = \"treatment effect\" and grid.type = \"manually\".")
      }
 
     if (grid.type!="manually"){
-      if(class(truth) !="numeric" | length(truth)!=3 | truth[2]<truth[1])
+      if(!inherits(truth, "numeric") | length(truth)!=3 | truth[2]<truth[1])
         stop("\"truth\" has to be a numeric of length 3 specifying a sequence as in seq() if type.update = \"treatment effect\" and grid.type != \"manually\".")
       truth <- seq(truth[1],truth[2],length.out=truth[3])
     }
@@ -1754,25 +1754,25 @@ gsbSimulation <- function(truth=NULL,
   
   if (type.update=="per arm"){
     if (grid.type=="manually"){
-      if(class(truth)[1] != "matrix")
+      if(!inherits(truth,  "matrix"))
         stop("\"truth\" has to be a n x 2 matrix if type.update = \"per arm\" and grid.type = \"manually\".")
       if(dim(truth)[2] != 2)
         stop("\"truth\" has to be a n x 2 matrix if type.update = \"per arm\" and grid.type = \"manually\".")
     }
 
     if (grid.type=="table"){
-      if(class(truth) != "list" )
+      if(!inherits(truth, "list" ))
         stop("If type.update = \"per arm\" and grid.type = \"table\", \"truth\" has to be a list where the first obect is a vector containing the control values and in the second object is a vector containing the treatment values. These are use to build a regular grid.")
       if(length(truth) != 2)
         stop("If type.update = \"per arm\" and grid.type = \"table\", \"truth\" has to be a list where the first obect is a vector containing the control values and in the second object is a vector containing the treatment values. These are use to build a regular grid.")
-      if(class(integer2numeric(truth[[1]])) != "numeric" | class(integer2numeric(truth[[2]])) != "numeric" )
+      if(!inherits(integer2numeric(truth[[1]]),  "numeric") | !inherits(integer2numeric(truth[[2]]), "numeric"))
         stop("If type.update = \"per arm\" and grid.type = \"table\", \"truth\" has to be a list where the first object is a numeric containing the control values and the second object is a numeric containing the treatment values. These are use to build a regular grid.")
 
       truth <- as.matrix(expand.grid(truth[[1]],truth[[2]]))
     }
 
     if (grid.type=="plot"){
-      if(class(truth) != "numeric" | length(truth)!=5)
+      if(!inherits(truth, "numeric") | length(truth)!=5)
         stop("If type.update = \"per arm\" and grid.type = \"plot\", \"truth\" has to be a numeric of length 5 specifying c(control.range.min, control.range.max, treatment.range.min, treatment.range.max, nr.of.points). ")
    
       bnds <- rbind(c(truth[1],truth[2]), c(truth[3],truth[4]))
@@ -1784,7 +1784,7 @@ gsbSimulation <- function(truth=NULL,
     }
 
     if (grid.type=="sliced"){
-      if(class(truth) != "list" | length(truth)!=2)
+      if(!inherits(truth, "list") | length(truth)!=2)
         stop("If type.update = \"per arm\" and grid.type = \"sliced\", \"truth\" has to be a list of length 2 containing two vectors. The first specifies the control values. The second the differences (treatment - control) of interest. ")
 
       treat <- truth[[1]] + rep(truth[[2]], each=length(truth[[1]]))
@@ -1908,31 +1908,31 @@ plot.gsbMainOut <- function(x,
 
   
   if(range.delta[1]!="default")
-    if(class(range.delta)!="numeric")
+    if(!inherits(range.delta, "numeric"))
       stop("\"range.delta\" hat to be a numeric.")
   
   if(stages[1]!="default"){
-    if(class(stages)!="numeric")
+    if(!inherits(stages, "numeric"))
       stop("\"stages\" has to b a numeric.")
     if(x$design$nr.stages < max(stages))
       stop("\"stages\" has to be <= nr of stages.")
   }
-  if(class(delta.grid) !="logical")
+  if(!inherits(delta.grid, "logical"))
     stop("\"delta.grid\" has to be of class logical.")
 
-  if(class(color) !="logical")
+  if(!inherits(color, "logical"))
     stop("\"color\" has to be of class logical.")
 
-  if(class(smooth)!="numeric" | length(smooth)!=1)
+  if(!inherits(smooth, "numeric") | length(smooth)!=1)
     stop("\"smooth\" has a numeric of length 1.")    
 
-  if(class(export) !="logical")
+  if(!inherits(export, "logical"))
     stop("\"export\" has to be of class logical.")
 
-  if(class(path) !="character")
+  if(!inherits(path, "character"))
     stop("\"path\" has to be of class character .")
 
-  if((what=="both" | what=="cumulative both") & class(x$OC)[1]!= "gsbSimCalcDif.result")
+  if((what=="both" | what=="cumulative both") & !inherits(x$OC, "gsbSimCalcDif.result"))
     stop("what = \"both\" is only a valid input if method = \"both\".")
   
   if(x$design$nr.stages==1){
@@ -1951,15 +1951,15 @@ plot.gsbMainOut <- function(x,
 
   ## boundary
   if(what=="boundary" || what=="std.boundary"){
-    if(!(class(x$simulation)[2]=="gsbSimCalcDif" || class(x$simulation)[2]=="gsbCalcDif")){
+    if(!(inherits(x$simulation, "gsbSimCalcDif") || inherits(x$simulation, "gsbCalcDif"))){
       stop("\n To plot criteria, \"type.update\" has to be \"treatment effect\" and \"method\" has to be \"numerical integration\" or \"both\"\n")
     }
-    r <- plot.boundary(x, what = what)
+    r <- plot_boundary(x, what = what)
   }
 
   
   if(sliced){
-    if(class(x$OC)[1] != "gsbSimArm.result")
+    if(!inherits(x$OC, "gsbSimArm.result"))
       stop("if \"sliced = TRUE\" the \"type.update\" has to be \"per arm\".")
     if(x$simulation$grid.type != "sliced")
       stop("if \"sliced = TRUE\" the \"grid.type\" has to be \"sliced\".")
@@ -1987,7 +1987,7 @@ plot.gsbMainOut <- function(x,
   }
 
   if(what=="delta.grid"){
-    if(class(x$simulation)[2]!="gsbSimArm"){
+    if(!inherits(x$simulation, "gsbSimArm")){
       return(cat("the argument \"type.update\" of the function \"gsbSimulation\" has to be set to \"per arm\" to use this plot"))
     }
     if(export){
@@ -2002,7 +2002,7 @@ plot.gsbMainOut <- function(x,
   }
 
   if(!(what=="patients" || what== "delta.grid" || what== "boundary" || what=="std.boundary")){
-    if(class(x$OC)[1]=="gsbSimArm.result"){
+    if(inherits(x$OC, "gsbSimArm.result")){
       r <- plot.gsbSimArm.result(x=x, what=what, range.delta = range.delta, stages=stages,color=color,delta.grid=delta.grid,smooth=smooth, contour=contour)
     }else{
       r <- plot.gsbSimDif.result(x,what=what,stages=stages, range.delta=range.delta )
@@ -2045,7 +2045,7 @@ plot.gsbSimDif.result <- function(x,
       stages <- 1:i
     }
   }
-  if(class(stages)=="numeric"){
+  if(inherits(stages, "numeric")){
     stages <- stages[!duplicated(stages)]
     ## stages <- stages[stages<=i]
     ## stages <- stages[stages>=0]
@@ -2257,7 +2257,7 @@ tab <- function(x,
 {
   
   ## control / prepare arguments
-  if (class(x)[1] != "gsbMainOut") 
+  if (!inherits(x, "gsbMainOut")) 
     stop("\"x\" has to be of class gsbMainOut (output object of function 'gsb()').")
   OC <- x$OC
   i <- length(levels(OC$stage))
@@ -2279,21 +2279,21 @@ tab <- function(x,
   }
   
   atDelta <- integer2numeric(atDelta)
-  if (atDelta[1] != "default" & class(atDelta)[1] != "numeric") 
+  if (atDelta[1] != "default" & !inherits(atDelta, "numeric")) 
     stop("\"atDelta\" has to be of class numeric.")
   
   digits <- integer2numeric(digits)
-  if (class(digits) != "numeric" | length(digits) != 1 | round(digits, 0) != digits) 
+  if (!inherits(digits, "numeric") | length(digits) != 1 | round(digits, 0) != digits) 
     stop("\"digits\" has to be an integer value of class numeric or intger with length 1.")
   
  
-  if (class(export) != "logical") 
+  if (!inherits(export,  "logical"))
     stop("\"export\" has to be of class logical.")
   
-  if (class(sep) != "character") 
+  if (!inherits(sep,  "character"))
     stop("\"sep\" has to be of class character.")
   
-  if (class(path) != "character") 
+  if (!inherits(path, "character"))
     stop("\"path\" has to be of class character.")
   
   
@@ -2711,7 +2711,7 @@ summary.gsbMainOut <- function(object, atDelta="default", ...){
   
   atDelta <- integer2numeric(atDelta)
 
-  if(atDelta[1]!="default" & class(atDelta)[1]!="numeric")
+  if(atDelta[1]!="default" & !inherits(atDelta, "numeric"))
     stop("\"atDelta\" has to be of class numeric.") 
   
   cat("\n*** Group Sequential Bayesian Design ***\n\n")
@@ -2724,7 +2724,7 @@ summary.gsbMainOut <- function(object, atDelta="default", ...){
   invisible(l)
 }
 
-plot.boundary <- function(x, what){
+plot_boundary <- function(x, what){
   
   panel <- function(...) {
     panel.grid(h = -1, v = -1, lty = "dotted", lwd=2, col = "light grey")
@@ -2803,7 +2803,7 @@ plot.gsbSimArm.sliced <- function(x,
       stages <- 1:i
     }
   }
-  if(class(stages)=="numeric"){
+  if(inherits(stages, "numeric")){
     stages <- stages[!duplicated(stages)]
   }
 

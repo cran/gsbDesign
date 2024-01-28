@@ -227,7 +227,7 @@ See Gerber and Gsponer (2016) for more details.
 Florian Gerber <florian.gerber@math.uzh.ch>, Thomas Gsponer
 }
 \seealso{
-\code{\link{plot.gsbMainOut}}, \code{\link{tab}}, \code{\link{gsbBayesUpdate}}, \code{\link{gsbCriteria}}, \code{\link{gsb-package}}
+\code{\link{plot.gsbMainOut}}, \code{\link{tab}}, \code{\link{gsbBayesUpdate}}, \code{\link{gsbCriteria}}, \code{\link{gsbDesign-package}}
 }
 \examples{
 ## E X A M P L E 1: Update on treatment effect, flat prior

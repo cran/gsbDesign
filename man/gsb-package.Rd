@@ -1,5 +1,4 @@
-\name{gsb-package}
-\alias{gsb-package}
+\name{gsbDesign-package}
 \alias{gsbDesign-package}
 \docType{package}
 \title{Group Sequential Bayesian Design}
@@ -24,8 +23,8 @@ The main function of the package is \code{gsb()}. More detailed information can 
   \tabular{ll}{
     Package: \tab gsbDesign\cr
     Type: \tab Package\cr
-    Version: \tab 1.0-2\cr
-    Date: \tab 2021-10-02\cr
+    Version: \tab 1.0-3\cr
+    Date: \tab 2024-01-23\cr
     License: \tab GNU General Public License >=3\cr
     LazyLoad: \tab yes\cr
   }

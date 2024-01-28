@@ -1,7 +1,7 @@
 Package: gsbDesign
 Type: Package
-Version: 1.0-2
-Date: 2021-10-02
+Version: 1.0-3
+Date: 2024-01-23
 Title: Group Sequential Bayes Design
 Authors@R: c(person("Florian", "Gerber", role = c("aut")),
              person("Thomas", "Gsponer", role = "aut"),	 
@@ -9,16 +9,16 @@ Authors@R: c(person("Florian", "Gerber", role = c("aut")),
                     email = "bbnkmp@mail.de",
 		    comment = "maintainer"))
 Depends: gsDesign, lattice, grid,
-Imports: stats, graphics, grDevices, utils
+Imports: stats, graphics, grDevices, utils, ggplot2
 Description: Group Sequential Operating Characteristics for Clinical,
         Bayesian two-arm Trials with known Sigma and Normal Endpoints,
 	as described in Gerber and Gsponer (2016) <doi: 10.18637/jss.v069.i11>.
 License: GPL-3
 LazyLoad: yes
 NeedsCompilation: no
-Packaged: 2021-10-02 12:17:47 UTC; bjoern
+Packaged: 2024-01-27 15:48:33 UTC; bjoern
 Repository: CRAN
-Date/Publication: 2021-10-04 08:20:05 UTC
+Date/Publication: 2024-01-28 11:20:11 UTC
 Author: Florian Gerber [aut],
   Thomas Gsponer [aut],
   Bjoern Bornkamp [cre] (maintainer)

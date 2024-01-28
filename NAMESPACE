@@ -1,4 +1,4 @@
-import(grid, lattice, gsDesign)
+import(grid, lattice, ggplot2, gsDesign)
 importFrom(stats, approx, na.omit, predict, qnorm, rnorm, runif)
 importFrom(graphics, barplot, plot)
 importFrom(grDevices, colorRampPalette, dev.off, png)
